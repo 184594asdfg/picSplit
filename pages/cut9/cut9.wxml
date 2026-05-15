@@ -2,9 +2,9 @@
   <view class="main-content">
     <view class="grid-container">
       <view class="preview-area">
-        <image 
-          class="preview-image upload-image" 
-          wx:if="{{selectedImage}}" 
+        <image
+          class="preview-image upload-image"
+          wx:if="{{selectedImage}}"
           src="{{selectedImage}}"
           mode="aspectFit"
           style="width:{{imgW}}px;height:{{imgH}}px;left:{{imgX}}px;top:{{imgY}}px;"
@@ -12,17 +12,15 @@
           bindtouchmove="touchMove"
           bindtouchend="touchEnd"
         ></image>
-        <image class="preview-image shape-image" src="{{currentShapeIcon}}" mode="aspectFit"></image>
+        <image class="preview-image shape-image screen-blend" src="{{currentShapeIcon}}" mode="aspectFit"></image>
       </view>
     </view>
-
-    <view class="divider"></view>
 
     <view class="shape-section">
       <view class="section-title">图形</view>
       <view class="shape-scroll">
-        <view 
-          wx:for="{{shapes}}" 
+        <view
+          wx:for="{{shapes}}"
           wx:key="id"
           class="shape-item {{selectedShape === item.id ? 'selected' : ''}}"
           data-id="{{item.id}}"

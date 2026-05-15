@@ -19,7 +19,6 @@ Page({
     selectedImage: null,
     currentShapeIcon: '/images/masks/square.png',
 
-    // 拖拽与尺寸
     imgX: 0,
     imgY: 0,
     startX: 0,
@@ -38,7 +37,6 @@ Page({
     this.getPreviewSize()
   },
 
-  // 获取预览区真实宽高
   getPreviewSize() {
     const query = wx.createSelectorQuery().in(this)
     query.select('.preview-area').boundingClientRect(rect => {
@@ -59,7 +57,6 @@ Page({
     })
   },
 
-  // 选图 + 计算等比例：铺满预览区、不裁剪、居中
   onChooseImage() {
     wx.chooseImage({
       count: 1,
@@ -75,10 +72,8 @@ Page({
             const pw = this.data.preW
             const ph = this.data.preH
 
-            // 核心：等比例缩放，保证图片【完整不裁剪】同时【宽高铺满预览区】
             const scaleW = pw / iw
             const scaleH = ph / ih
-            // 取大比例 → 刚好一边铺满，另一边超出，完整无裁剪
             const scale = Math.max(scaleW, scaleH)
 
             const showW = iw * scale
@@ -123,7 +118,6 @@ Page({
 
     const { preW, preH, imgW, imgH } = this.data
 
-    // 边界限位：不让图片空白露出预览区
     const minX = preW - imgW
     const maxX = 0
     const minY = preH - imgH
