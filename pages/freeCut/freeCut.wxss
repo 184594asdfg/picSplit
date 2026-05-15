@@ -166,8 +166,8 @@
 .mode-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 32rpx;
+  justify-content: flex-start;
+  padding: 20rpx 32rpx;
 }
 
 .mode-group {
@@ -179,11 +179,14 @@
 }
 
 .mode-item {
-  padding: 16rpx 48rpx;
+  padding: 0rpx 30rpx;
   border-radius: 36rpx;
-  font-size: 28rpx;
+  font-size: 24rpx;
   color: #888;
-  min-height: 60rpx;
+  min-height: 45rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mode-item.active {
