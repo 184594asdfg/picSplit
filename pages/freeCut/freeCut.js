@@ -44,7 +44,15 @@ Page({
     const { gridCols, gridRows } = this.data
     const cells = []
     for (let i = 0; i < gridCols * gridRows; i++) {
-      cells.push(i)
+      const col = i % gridCols
+      const row = Math.floor(i / gridCols)
+      cells.push({
+        index: i,
+        col: col,
+        row: row,
+        isLastCol: col === gridCols - 1,
+        isLastRow: row === gridRows - 1
+      })
     }
     this.setData({ 
       gridCells: cells,
@@ -88,7 +96,15 @@ Page({
     const grid = this.data.gridList[index]
     const cells = []
     for (let i = 0; i < grid.cols * grid.rows; i++) {
-      cells.push(i)
+      const col = i % grid.cols
+      const row = Math.floor(i / grid.cols)
+      cells.push({
+        index: i,
+        col: col,
+        row: row,
+        isLastCol: col === grid.cols - 1,
+        isLastRow: row === grid.rows - 1
+      })
     }
     this.setData({
       activeGridIndex: index,

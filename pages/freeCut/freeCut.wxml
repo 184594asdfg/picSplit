@@ -14,13 +14,13 @@
       <view
         class="grid-overlay {{modeType}}"
         wx:if="{{selectedImage}}"
-        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);"
+        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);--grid-cols:{{gridCols}};--grid-rows:{{gridRows}};"
       >
         <view 
           wx:for="{{gridCells}}" 
           wx:key="index"
-          class="{{selectedCells.indexOf(item) > -1 ? 'selected' : ''}}"
-          data-index="{{item}}"
+          class="grid-cell {{selectedCells.indexOf(item.index) > -1 ? 'selected' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+          data-index="{{item.index}}"
           bindtap="onCellTap"
         ></view>
       </view>
@@ -75,13 +75,6 @@
       </view>
     </view>
 
-    <view class="bottom-bar">
-      <view class="btn btn-outline" bindtap="onChooseImage">
-        <text class="btn-text">选择图片</text>
-      </view>
-      <view class="btn btn-primary" bindtap="onSaveImage">
-        <text class="btn-text">保存图片</text>
-      </view>
-    </view>
+
   </view>
 </view>
