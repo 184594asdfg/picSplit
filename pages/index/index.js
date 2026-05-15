@@ -10,7 +10,7 @@ Page({
       },
       {
         id: 2,
-        name: '长图拼接',
+        name: '自由切图',
         desc: '多张图片拼成长图'
       },
       {
@@ -37,6 +37,10 @@ Page({
     if (id === 1) {
       wx.navigateTo({
         url: '/pages/cut9/cut9'
+      })
+    } else if (id === 2) {
+      wx.navigateTo({
+        url: '/pages/freeCut/freeCut'
       })
     } else {
       wx.showToast({

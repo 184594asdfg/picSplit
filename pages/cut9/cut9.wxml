@@ -9,7 +9,7 @@
           mode="aspectFit"
           style="width:{{imgW}}px;height:{{imgH}}px;left:{{imgX}}px;top:{{imgY}}px;"
           bindtouchstart="touchStart"
-          bindtouchmove="touchMove"
+          catchtouchmove="touchMove"
           bindtouchend="touchEnd"
         ></image>
         <image class="preview-image shape-image screen-blend" src="{{currentShapeIcon}}" mode="aspectFit"></image>

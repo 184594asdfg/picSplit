@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "九宫格图片"
+  "navigationBarTitleText": "九宫格图片",
+  "disableScroll": true
 }

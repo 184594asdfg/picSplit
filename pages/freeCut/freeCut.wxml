@@ -1,0 +1,89 @@
+<view class="container">
+
+  <view class="preview">
+    <view class="preview-box">
+      <image
+        class="preview-image"
+        wx:if="{{selectedImage}}"
+        src="{{selectedImage}}"
+        mode="aspectFit"
+      ></image>
+      <view wx:if="{{!selectedImage}}" class="preview-placeholder" bindtap="onChooseImage">
+        <text class="placeholder-text">点击选择图片</text>
+      </view>
+      <view
+        class="grid-overlay {{modeType}}"
+        wx:if="{{selectedImage}}"
+        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);"
+      >
+        <view wx:for="{{gridCells}}" wx:key="index"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="operation">
+    <view class="tab-bar">
+      <view class="tab-icon">❔</view>
+      <view class="tab-group">
+        <view
+          class="tab-item {{activeTab === 0 ? 'active' : ''}}"
+          data-index="0"
+          bindtap="onTabChange"
+        >网格</view>
+        <view
+          class="tab-item {{activeTab === 1 ? 'active' : ''}}"
+          data-index="1"
+          bindtap="onTabChange"
+        >纵向</view>
+        <view
+          class="tab-item {{activeTab === 2 ? 'active' : ''}}"
+          data-index="2"
+          bindtap="onTabChange"
+        >横向</view>
+      </view>
+      <view class="tab-icon">✓</view>
+    </view>
+
+    <view class="mode-bar">
+      <view class="mode-group">
+        <view
+          class="mode-item {{modeType === 'fixed' ? 'active' : ''}}"
+          data-type="fixed"
+          bindtap="onModeChange"
+        >固定</view>
+        <view
+          class="mode-item {{modeType === 'free' ? 'active' : ''}}"
+          data-type="free"
+          bindtap="onModeChange"
+        >自由</view>
+      </view>
+    </view>
+
+    <view class="grid-options">
+      <view
+        class="grid-item {{activeGridIndex === index ? 'active' : ''}}"
+        wx:for="{{gridList}}"
+        wx:key="index"
+        data-index="{{index}}"
+        bindtap="onGridSelect"
+      >
+        <view
+          class="icon-box"
+          style="grid-template-columns:repeat({{item.cols}},1fr);grid-template-rows:repeat({{item.rows}},1fr);"
+        >
+          <view wx:for="{{item.cols * item.rows}}" wx:key="item"></view>
+        </view>
+        <view class="grid-text">{{item.name}}</view>
+      </view>
+    </view>
+
+    <view class="bottom-bar">
+      <view class="btn btn-outline" bindtap="onChooseImage">
+        <text class="btn-text">选择图片</text>
+      </view>
+      <view class="btn btn-primary" bindtap="onSaveImage">
+        <text class="btn-text">保存图片</text>
+      </view>
+    </view>
+  </view>
+</view>
