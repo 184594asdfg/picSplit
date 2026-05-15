@@ -2,7 +2,8 @@
   <view class="main-content">
     <view class="grid-container">
       <view class="preview-area">
-        <image class="preview-image" src="{{currentShapeIcon}}" mode="aspectFit"></image>
+        <image class="preview-image upload-image" wx:if="{{selectedImage}}" src="{{selectedImage}}" mode="aspectFill"></image>
+        <image class="preview-image shape-image" src="{{currentShapeIcon}}" mode="aspectFit"></image>
       </view>
     </view>
 
