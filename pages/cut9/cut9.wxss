@@ -48,11 +48,13 @@
 
 .preview-image.upload-image {
   z-index: 1;
+  pointer-events: auto;
 }
 
 .preview-image.shape-image {
   z-index: 2;
   mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .shape-section {
