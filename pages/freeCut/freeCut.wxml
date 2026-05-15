@@ -16,7 +16,13 @@
         wx:if="{{selectedImage}}"
         style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);"
       >
-        <view wx:for="{{gridCells}}" wx:key="index"></view>
+        <view 
+          wx:for="{{gridCells}}" 
+          wx:key="index"
+          class="{{selectedCells.indexOf(item) > -1 ? 'selected' : ''}}"
+          data-index="{{item}}"
+          bindtap="onCellTap"
+        ></view>
       </view>
     </view>
   </view>
@@ -26,20 +32,12 @@
       <view class="tab-icon">❔</view>
       <view class="tab-group">
         <view
-          class="tab-item {{activeTab === 0 ? 'active' : ''}}"
-          data-index="0"
+          wx:for="{{tabList}}"
+          wx:key="index"
+          class="tab-item {{activeTab === item.index ? 'active' : ''}}"
+          data-index="{{item.index}}"
           bindtap="onTabChange"
-        >网格</view>
-        <view
-          class="tab-item {{activeTab === 1 ? 'active' : ''}}"
-          data-index="1"
-          bindtap="onTabChange"
-        >纵向</view>
-        <view
-          class="tab-item {{activeTab === 2 ? 'active' : ''}}"
-          data-index="2"
-          bindtap="onTabChange"
-        >横向</view>
+        >{{item.name}}</view>
       </view>
       <view class="tab-icon">✓</view>
     </view>

@@ -86,7 +86,6 @@
   position: absolute;
   inset: 0;
   display: grid;
-  pointer-events: none;
 }
 
 .grid-overlay.fixed div {
@@ -104,6 +103,11 @@
   border-left: 1px dashed #fff;
 }
 
+.grid-overlay div.selected {
+  background-color: rgba(247, 247, 247, 0.5);
+  border-color: #f7f7f7;
+}
+
 .operation {
   position: fixed;
   bottom: 0;
@@ -115,14 +119,14 @@
   display: flex;
   flex-direction: column;
   gap: 24rpx;
-  overflow: hidden;
+  z-index: 10;
 }
 
 .tab-bar {
   background-color: #e5e5e5;
   display: flex;
   align-items: center;
-  padding: 8rpx 32rpx;
+  padding: 10rpx 0rpx 0rpx 32rpx;
   border-radius: 40rpx 40rpx 0 0;
 }
 
@@ -142,19 +146,21 @@
 .tab-item {
   flex: 1;
   text-align: center;
-  padding: 8rpx 0;
-  border-radius: 12rpx;
+  padding: 12rpx 0;
+  border-radius: 15rpx 15rpx 0rpx 0rpx;
   font-size: 28rpx;
-  color: #888;
+  color: #888888;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 60rpx;
+  background-color: transparent;
 }
 
 .tab-item.active {
-  background-color: #fff;
-  color: #000;
-  font-weight: 500;
+  background-color: #f7f7f7;
+  color: #000000;
+  font-weight: bold;
 }
 
 .mode-bar {
@@ -177,6 +183,7 @@
   border-radius: 36rpx;
   font-size: 28rpx;
   color: #888;
+  min-height: 60rpx;
 }
 
 .mode-item.active {
@@ -201,6 +208,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12rpx;
+  padding: 10rpx 0;
 }
 
 .grid-item .icon-box {
