@@ -1,0 +1,21 @@
+<view class="container">
+ 
+
+  <view class="header">
+    <text class="title">九宫格切图</text>
+    <text class="subtitle">简单高效的图片处理工具</text>
+  </view>
+
+  <view class="function-list">
+    <view 
+      wx:for="{{functions}}" 
+      wx:key="id"
+      class="function-item"
+      data-id="{{item.id}}"
+      bindtap="onTapFunction"
+    >
+      <view class="name">{{item.name}}</view>
+      <view class="desc">{{item.desc}}</view>
+    </view>
+  </view>
+</view>
