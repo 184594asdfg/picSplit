@@ -19,38 +19,34 @@ Page({
     selectedImage: null,
     currentShapeIcon: '/images/masks/square.png',
 
-    // 拖拽定位
+    // 拖拽与尺寸
     imgX: 0,
     imgY: 0,
     startX: 0,
     startY: 0,
     isDragging: false,
-    // 图片实际宽高
-    imgRealW: 0,
-    imgRealH: 0,
-    // 预览区宽高
-    previewW: 0,
-    previewH: 0
+    imgW: 0,
+    imgH: 0,
+    preW: 0,
+    preH: 0
   },
 
   onLoad() {
     this.setData({
       scrollIntoView: 'shape-1'
     })
-    // 获取预览区尺寸
-    this.getPreviewRect()
+    this.getPreviewSize()
   },
 
-  // 获取preview-area尺寸
-  getPreviewRect() {
+  // 获取预览区真实宽高
+  getPreviewSize() {
     const query = wx.createSelectorQuery().in(this)
-    query.select('.preview-area').boundingClientRect(res => {
-      if (res) {
-        this.setData({
-          previewW: res.width,
-          previewH: res.height
-        })
-      }
+    query.select('.preview-area').boundingClientRect(rect => {
+      if (!rect) return
+      this.setData({
+        preW: rect.width,
+        preH: rect.height
+      })
     }).exec()
   },
 
@@ -63,30 +59,40 @@ Page({
     })
   },
 
-  // 选择图片 + 自动适配：完整不裁剪、铺满预览区
+  // 选图 + 计算等比例：铺满预览区、不裁剪、居中
   onChooseImage() {
     wx.chooseImage({
       count: 1,
       sizeType: ['original', 'compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const tempFilePath = res.tempFilePaths[0]
-        // 获取图片真实宽高
+        const path = res.tempFilePaths[0]
         wx.getImageInfo({
-          src: tempFilePath,
-          success: (imgInfo) => {
-            const { width, height } = imgInfo
+          src: path,
+          success: (info) => {
+            const iw = info.width
+            const ih = info.height
+            const pw = this.data.preW
+            const ph = this.data.preH
+
+            // 核心：等比例缩放，保证图片【完整不裁剪】同时【宽高铺满预览区】
+            const scaleW = pw / iw
+            const scaleH = ph / ih
+            // 取大比例 → 刚好一边铺满，另一边超出，完整无裁剪
+            const scale = Math.max(scaleW, scaleH)
+
+            const showW = iw * scale
+            const showH = ih * scale
+
             this.setData({
-              selectedImage: tempFilePath,
-              imgRealW: width,
-              imgRealH: height,
-              imgX: 0,
-              imgY: 0
+              selectedImage: path,
+              imgW: showW,
+              imgH: showH,
+              imgX: (pw - showW) / 2,
+              imgY: (ph - showH) / 2
             })
-            wx.showToast({
-              title: '图片已选择',
-              icon: 'success'
-            })
+
+            wx.showToast({ title: '图片已选择', icon: 'success' })
           }
         })
       }
@@ -94,13 +100,9 @@ Page({
   },
 
   onSaveImage() {
-    wx.showToast({
-      title: '保存成功',
-      icon: 'success'
-    })
+    wx.showToast({ title: '保存成功', icon: 'success' })
   },
 
-  // 拖拽开始
   touchStart(e) {
     if (!this.data.selectedImage) return
     this.setData({
@@ -110,7 +112,6 @@ Page({
     })
   },
 
-  // 拖拽移动 + 边界限制
   touchMove(e) {
     if (!this.data.isDragging || !this.data.selectedImage) return
 
@@ -120,17 +121,13 @@ Page({
     let newX = this.data.imgX + dx
     let newY = this.data.imgY + dy
 
-    // 计算图片缩放后实际显示宽高（contain完整显示）
-    const { previewW, previewH, imgRealW, imgRealH } = this.data
-    const scale = Math.min(previewW / imgRealW, previewH / imgRealH)
-    const showW = imgRealW * scale
-    const showH = imgRealH * scale
+    const { preW, preH, imgW, imgH } = this.data
 
-    // 边界约束：不让图片移出预览区
-    const maxX = (previewW - showW) / 2
-    const minX = -maxX
-    const maxY = (previewH - showH) / 2
-    const minY = -maxY
+    // 边界限位：不让图片空白露出预览区
+    const minX = preW - imgW
+    const maxX = 0
+    const minY = preH - imgH
+    const maxY = 0
 
     newX = Math.max(minX, Math.min(maxX, newX))
     newY = Math.max(minY, Math.min(maxY, newY))
@@ -143,10 +140,7 @@ Page({
     })
   },
 
-  // 拖拽结束
   touchEnd() {
-    this.setData({
-      isDragging: false
-    })
+    this.setData({ isDragging: false })
   }
 })

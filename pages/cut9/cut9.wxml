@@ -2,18 +2,16 @@
   <view class="main-content">
     <view class="grid-container">
       <view class="preview-area">
-        <!-- 上传图片：mode="aspectFit" 完整不裁剪 + 拖拽定位 -->
         <image 
           class="preview-image upload-image" 
           wx:if="{{selectedImage}}" 
-          src="{{selectedImage}}" 
+          src="{{selectedImage}}"
           mode="aspectFit"
-          style="transform: translate({{imgX}}px, {{imgY}}px);"
+          style="width:{{imgW}}px;height:{{imgH}}px;left:{{imgX}}px;top:{{imgY}}px;"
           bindtouchstart="touchStart"
           bindtouchmove="touchMove"
           bindtouchend="touchEnd"
         ></image>
-        <!-- 形状遮罩层 -->
         <image class="preview-image shape-image" src="{{currentShapeIcon}}" mode="aspectFit"></image>
       </view>
     </view>
