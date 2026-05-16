@@ -63,29 +63,21 @@ page {
 
 /* 功能按钮区 */
 .action-section {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
   padding: 24px 16px;
   gap: 16px;
   position: relative;
 }
 
-/* 功能区右侧分割线 */
-.action-section::after {
-  content: '';
-  position: absolute;
-  right: calc(100% / 3);
-  top: 20%;
-  height: 60%;
-  width: 1px;
-  background-color: rgba(255,255,255,0.2);
-}
-
 .action-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  max-width: 120px;
 }
 .action-item:active {
   transform: scale(0.95);
@@ -143,9 +135,6 @@ page {
   margin-bottom: 24px;
   color: rgba(255,255,255,0.7);
 }
-.expand-icon:active {
-  transform: rotate(180deg);
-}
 
 /* 宫格预览区：图片按原比例自适应 */
 .preview-grid {
@@ -166,7 +155,7 @@ page {
 
 .preview-item {
   position: relative;
-  background-color: #ffffff;
+  background-color: transparent;
   border-radius: 4px;
   overflow: hidden;
   display: flex;
@@ -204,6 +193,9 @@ page {
     gap: 8px;
     padding: 20px 12px;
   }
+  .action-item {
+    max-width: 100px;
+  }
   .action-icon {
     width: 56px;
     height: 56px;
@@ -213,8 +205,8 @@ page {
     font-size: 13px;
   }
   .preview-grid {
-    gap: 6px;
-    padding: 0 10px 32px;
+    gap: 12px;
+    padding: 0 12px 32px;
   }
   .preview-grid.cols-3 {
     gap: 8px;

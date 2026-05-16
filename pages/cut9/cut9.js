@@ -2,6 +2,17 @@ Page({
   data: {
     shapes: [
       { id: 1, icon: '/images/masks/square.png' },
+      { id: 2, icon: '/images/masks/circle.png' },
+      { id: 3, icon: '/images/masks/heart.png' },
+      { id: 4, icon: '/images/masks/star_mask.png' },
+      { id: 5, icon: '/images/masks/flower.png' },
+      { id: 6, icon: '/images/masks/cloud.png' },
+      { id: 7, icon: '/images/masks/clover.png' },
+      { id: 8, icon: '/images/masks/leaf_mask.png' },
+      { id: 9, icon: '/images/masks/blob_mask.png' },
+      { id: 10, icon: '/images/masks/burst_mask.png' },
+      { id: 11, icon: '/images/masks/hex_mask.png' },
+      { id: 12, icon: '/images/masks/spike_mask.png' },
     ],
     selectedShape: 1,
     selectedImage: null,
@@ -117,6 +128,7 @@ Page({
       ];
 
       const previewList = [];
+
       for (let i = 0; i < 9; i++) {
         wx.showLoading({ title: `保存中 ${i + 1}/9`, mask: true });
         const p = points[i];
@@ -125,12 +137,19 @@ Page({
         previewList.push(path);
       }
 
+      // 保存原图与图案结合的完整图
+      const combinedPath = await this.createCombinedImage(src, originalW, originalH);
+      if (combinedPath) {
+        await this.saveImg(combinedPath);
+        //previewList.push(combinedPath);
+      }
+
       wx.hideLoading();
       setTimeout(() => {
         wx.redirectTo({
           url: `/pages/result/result?source=grid&images=${encodeURIComponent(JSON.stringify(previewList))}`
         });
-      }, 500);
+      }, 100);
 
     } catch (e) {
       wx.hideLoading();
@@ -189,6 +208,50 @@ Page({
             fail: reject
           });
         };
+        img.src = src;
+      });
+    });
+  },
+
+  createCombinedImage(src, w, h) {
+    return new Promise((resolve) => {
+      const shapeIcon = this.data.currentShapeIcon;
+      if (!shapeIcon) {
+        resolve(null);
+        return;
+      }
+
+      const query = wx.createSelectorQuery().in(this);
+      query.select('#cutCanvas').fields({ node: true, size: true }).exec(res => {
+        if (!res[0]?.node) {
+          resolve(null);
+          return;
+        }
+        const canvas = res[0].node;
+        const ctx = canvas.getContext('2d');
+        canvas.width = w;
+        canvas.height = h;
+
+        const img = canvas.createImage();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const mask = canvas.createImage();
+          mask.onload = () => {
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.drawImage(mask, 0, 0, w, h);
+            ctx.globalCompositeOperation = 'source-over';
+
+            wx.canvasToTempFilePath({
+              canvas, quality: 1, fileType: 'png',
+              success: (r) => resolve(r.tempFilePath),
+              fail: () => resolve(null)
+            });
+          };
+          mask.onerror = () => resolve(null);
+          mask.src = shapeIcon;
+        };
+        img.onerror = () => resolve(null);
         img.src = src;
       });
     });
