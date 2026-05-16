@@ -128,7 +128,7 @@ Page({
       wx.hideLoading();
       setTimeout(() => {
         wx.redirectTo({
-          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
+          url: `/pages/result/result?source=grid&images=${encodeURIComponent(JSON.stringify(previewList))}`
         });
       }, 500);
 
