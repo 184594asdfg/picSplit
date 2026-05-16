@@ -8,7 +8,7 @@ Page({
     previewWidth: 0,
     previewHeight: 0,
     gridOverlayStyle: '',
-    modeType: 'fixed',
+    modeType: 'free',
     activeTab: 0,
     activeGridIndex: 0,
     gridCols: 2,
@@ -227,6 +227,7 @@ Page({
       gridCells: cells,
       selectedCells: []
     })
+    setTimeout(() => this.calculateGridOverlay(), 100)
   },
 
   onCellTap(e) {
