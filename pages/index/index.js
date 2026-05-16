@@ -39,14 +39,30 @@ Page({
         url: '/pages/cut9/cut9'
       })
     } else if (id === 2) {
-      wx.navigateTo({
-        url: '/pages/freeCut/freeCut'
-      })
+      // 自由切图：先选择图片
+      this.chooseImageForFreeCut()
     } else {
       wx.showToast({
         title: '功能开发中',
         icon: 'none'
       })
     }
+  },
+
+  chooseImageForFreeCut() {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['original', 'compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFilePaths[0]
+        wx.navigateTo({
+          url: `/pages/freeCut/freeCut?image=${encodeURIComponent(tempFilePath)}`
+        })
+      },
+      fail: () => {
+        console.log('用户取消选择图片')
+      }
+    })
   }
 })

@@ -14,12 +14,12 @@
       <view
         class="grid-overlay {{modeType}}"
         wx:if="{{selectedImage}}"
-        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);--grid-cols:{{gridCols}};--grid-rows:{{gridRows}};"
+        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);"
       >
         <view 
           wx:for="{{gridCells}}" 
           wx:key="index"
-          class="grid-cell {{selectedCells.indexOf(item.index) > -1 ? 'selected' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+          class="grid-cell {{selectedCells.includes(item.index) ? 'selected' : ''}}"
           data-index="{{item.index}}"
           bindtap="onCellTap"
         ></view>
@@ -65,16 +65,20 @@
         data-index="{{index}}"
         bindtap="onGridSelect"
       >
-        <view
-          class="icon-box"
-          style="grid-template-columns:repeat({{item.cols}},1fr);grid-template-rows:repeat({{item.rows}},1fr);"
-        >
-          <view wx:for="{{item.cols * item.rows}}" wx:key="item"></view>
+        <view class="icon-box" style="grid-template-columns:repeat({{item.cols}},1fr);grid-template-rows:repeat({{item.rows}},1fr);">
+          <view wx:for="{{item.cols * item.rows}}" wx:key="item" class="grid-inner-cell"></view>
         </view>
         <view class="grid-text">{{item.name}}</view>
       </view>
     </view>
 
-
+    <view class="bottom-bar">
+      <view class="btn btn-outline" bindtap="onChooseImage">
+        <text class="btn-text">选择图片</text>
+      </view>
+      <view class="btn btn-primary" bindtap="onSaveImage">
+        <text class="btn-text">保存图片</text>
+      </view>
+    </view>
   </view>
 </view>
