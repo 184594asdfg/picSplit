@@ -1,5 +1,4 @@
-<view class="container">
-
+<view class="container" catchtouchmove="preventMove">
   <view class="preview">
     <view class="preview-box">
       <view wx:if="{{!selectedImage}}" class="preview-placeholder" bindtap="onChooseImage">
@@ -12,14 +11,50 @@
           mode="aspectFit"
           bindload="onImageLoad"
         ></image>
+
+        <!-- 自由模式可拖动分割线 -->
+        <view class="img-wrap-lines" style="{{gridOverlayStyle}}" wx:if="{{modeType === 'free'}}">
+          <!-- 水平分割线（加宽触摸区） -->
+          <view
+            wx:for="{{horizontalLines}}"
+            wx:key="index"
+            class="touch-h"
+            style="top:{{item.y}}px"
+            data-index="{{index}}"
+            data-type="h"
+            bindtouchstart="onLineTouchStart"
+            bindtouchmove="onLineTouchMove"
+            bindtouchend="onLineTouchEnd"
+          >
+            <view class="divider horizontal-line"></view>
+          </view>
+
+          <!-- 垂直分割线（加宽触摸区） -->
+          <view
+            wx:for="{{verticalLines}}"
+            wx:key="index"
+            class="touch-v"
+            style="left:{{item.x}}px"
+            data-index="{{index}}"
+            data-type="v"
+            bindtouchstart="onLineTouchStart"
+            bindtouchmove="onLineTouchMove"
+            bindtouchend="onLineTouchEnd"
+          >
+            <view class="divider vertical-line"></view>
+          </view>
+        </view>
+
+        <!-- 固定模式 -->
         <view
-          class="grid-overlay {{modeType}}"
+          class="grid-overlay fixed"
+          wx:if="{{modeType === 'fixed'}}"
           style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);{{gridOverlayStyle}}"
         >
-          <view 
-            wx:for="{{gridCells}}" 
+          <view
+            wx:for="{{gridCells}}"
             wx:key="index"
-            class="grid-cell {{modeType}} {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+            class="grid-cell fixed {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
             data-index="{{item.index}}"
             bindtap="onCellTap"
           ></view>
@@ -28,51 +63,30 @@
     </view>
   </view>
 
+  <!-- 底部操作栏不变 -->
   <view class="operation">
     <view class="tab-bar">
       <view class="tab-icon">❔</view>
       <view class="tab-group">
-        <view
-          wx:for="{{tabList}}"
-          wx:key="index"
-          class="tab-item {{activeTab === item.index ? 'active' : ''}}"
-          data-index="{{item.index}}"
-          bindtap="onTabChange"
-        >{{item.name}}</view>
+        <view wx:for="{{tabList}}" wx:key="index" class="tab-item {{activeTab === item.index ? 'active' : ''}}" data-index="{{item.index}}" bindtap="onTabChange">{{item.name}}</view>
       </view>
       <view class="tab-icon">✓</view>
     </view>
 
     <view class="mode-bar">
       <view class="mode-group">
-        <view
-          class="mode-item {{modeType === 'fixed' ? 'active' : ''}}"
-          data-type="fixed"
-          bindtap="onModeChange"
-        >固定</view>
-        <view
-          class="mode-item {{modeType === 'free' ? 'active' : ''}}"
-          data-type="free"
-          bindtap="onModeChange"
-        >自由</view>
+        <view class="mode-item {{modeType === 'fixed' ? 'active' : ''}}" data-type="fixed" bindtap="onModeChange">固定</view>
+        <view class="mode-item {{modeType === 'free' ? 'active' : ''}}" data-type="free" bindtap="onModeChange">自由</view>
       </view>
     </view>
 
     <view class="grid-options">
-      <view
-        class="grid-item {{activeGridIndex === index ? 'active' : ''}}"
-        wx:for="{{activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList}}"
-        wx:key="index"
-        data-index="{{index}}"
-        bindtap="onGridSelect"
-      >
+      <view class="grid-item {{activeGridIndex === index ? 'active' : ''}}" wx:for="{{activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList}}" wx:key="index" data-index="{{index}}" bindtap="onGridSelect">
         <view class="icon-box" style="grid-template-columns:repeat({{item.cols}},1fr);grid-template-rows:repeat({{item.rows}},1fr);">
           <view wx:for="{{item.cols * item.rows}}" wx:key="item" class="grid-inner-cell"></view>
         </view>
         <view class="grid-text">{{item.name}}</view>
       </view>
     </view>
-
-
   </view>
 </view>

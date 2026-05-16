@@ -13,6 +13,12 @@ Page({
     activeGridIndex: 0,
     gridCols: 2,
     gridRows: 2,
+
+    horizontalLines: [],
+    verticalLines: [],
+    lineTouch: null,
+    gridRect: null,
+
     gridList: [
       { cols: 2, rows: 2, name: '四宫格' },
       { cols: 3, rows: 3, name: '九宫格' },
@@ -52,13 +58,9 @@ Page({
     const statusBarHeight = systemInfo.statusBarHeight
     const menuButton = wx.getMenuButtonBoundingClientRect()
     const navBarHeight = (menuButton.top - statusBarHeight) * 2 + menuButton.height
-    this.setData({
-      statusBarHeight,
-      navBarHeight
-    })
+    this.setData({ statusBarHeight, navBarHeight })
     this.initGrid()
-    
-    // 检查是否有传递过来的图片
+
     if (options.image) {
       const imagePath = decodeURIComponent(options.image)
       this.setImageFromPath(imagePath)
@@ -90,61 +92,61 @@ Page({
       const container = res[0]
       if (!container) return
 
-      if (modeType === 'fixed') {
-        // 固定模式：确保每个格子都是正方形
-        // 1. 计算图片在容器中的显示尺寸（与自由模式一致）
-        const imgRatio = imgWidth / imgHeight
-        const containerRatio = container.width / container.height
-        
-        let imgDisplayWidth, imgDisplayHeight
-        if (imgRatio > containerRatio) {
-          imgDisplayWidth = container.width
-          imgDisplayHeight = container.width / imgRatio
-        } else {
-          imgDisplayWidth = container.height * imgRatio
-          imgDisplayHeight = container.height
-        }
-        
-        // 2. 计算正方形格子的最大可能边长
-        const maxCellWidth = imgDisplayWidth / gridCols
-        const maxCellHeight = imgDisplayHeight / gridRows
-        const cellSize = Math.min(maxCellWidth, maxCellHeight)
-        
-        // 3. 计算网格最终尺寸（确保宽高比 = cols:rows）
-        const finalWidth = cellSize * gridCols
-        const finalHeight = cellSize * gridRows
-        
-        // 4. 计算居中偏移
-        const offsetX = (container.width - finalWidth) / 2
-        const offsetY = (container.height - finalHeight) / 2
-        
-        this.setData({
-          gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${finalWidth}px;height:${finalHeight}px;`
-        })
+      const imgRatio = imgWidth / imgHeight
+      const containerRatio = container.width / container.height
+
+      let displayWidth, displayHeight, offsetX, offsetY
+
+      if (imgRatio > containerRatio) {
+        displayWidth = container.width
+        displayHeight = container.width / imgRatio
+        offsetX = 0
+        offsetY = (container.height - displayHeight) / 2
       } else {
-        // 自由模式：原有逻辑
-        const imgRatio = imgWidth / imgHeight
-        const containerRatio = container.width / container.height
+        displayWidth = container.height * imgRatio
+        displayHeight = container.height
+        offsetX = (container.width - displayWidth) / 2
+        offsetY = 0
+      }
 
-        let displayWidth, displayHeight, offsetX, offsetY
+      const gridOverlayStyle = `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
+      this.setData({ gridOverlayStyle })
 
-        if (imgRatio > containerRatio) {
-          displayWidth = container.width
-          displayHeight = container.width / imgRatio
-          offsetX = 0
-          offsetY = (container.height - displayHeight) / 2
-        } else {
-          displayWidth = container.height * imgRatio
-          displayHeight = container.height
-          offsetX = (container.width - displayWidth) / 2
-          offsetY = 0
+      this.setData({
+        gridRect: {
+          left: offsetX, top: offsetY,
+          right: offsetX + displayWidth,
+          bottom: offsetY + displayHeight,
+          width: displayWidth, height: displayHeight
         }
+      })
 
-        this.setData({
-          gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
-        })
+      if (modeType === 'free') {
+        this.initFreeLines()
+      } else {
+        this.initGrid()
       }
     })
+  },
+
+  initFreeLines() {
+    const { gridRect, gridCols, gridRows } = this.data
+    if (!gridRect) return
+
+    const vw = gridRect.width
+    const vh = gridRect.height
+
+    const vLines = []
+    for (let i = 1; i < gridCols; i++) {
+      vLines.push({ x: vw * i / gridCols })
+    }
+
+    const hLines = []
+    for (let i = 1; i < gridRows; i++) {
+      hLines.push({ y: vh * i / gridRows })
+    }
+
+    this.setData({ verticalLines: vLines, horizontalLines: hLines })
   },
 
   initGrid() {
@@ -154,39 +156,19 @@ Page({
       const col = i % gridCols
       const row = Math.floor(i / gridCols)
       cells.push({
-        index: i,
-        col: col,
-        row: row,
+        index: i, col, row,
         isFirstRow: row === 0,
         isFirstCol: col === 0,
         isLastCol: col === gridCols - 1,
         isLastRow: row === gridRows - 1
       })
     }
-    this.setData({ 
-      gridCells: cells,
-      selectedCells: []
-    })
-  },
-
-  getPreviewSize() {
-    const query = wx.createSelectorQuery().in(this)
-    query.select('.preview-box').boundingClientRect(rect => {
-      if (!rect) return
-      this.setData({
-        previewWidth: rect.width,
-        previewHeight: rect.height
-      })
-    }).exec()
+    this.setData({ gridCells: cells, selectedCells: [] })
   },
 
   onTabChange(e) {
-    const index = parseInt(e.currentTarget.dataset.index, 10)
-    this.setData({
-      activeTab: index,
-      activeGridIndex: 0,
-      selectedCells: []
-    })
+    const index = parseInt(e.currentTarget.dataset.index)
+    this.setData({ activeTab: index, activeGridIndex: 0, selectedCells: [] })
     this.onGridSelect({ currentTarget: { dataset: { index: 0 } } })
   },
 
@@ -199,86 +181,77 @@ Page({
   onGridSelect(e) {
     const index = e.currentTarget.dataset.index
     const { activeTab, gridList, verticalList, horizontalList } = this.data
-    let currentList
-    if (activeTab === 0) {
-      currentList = gridList
-    } else if (activeTab === 1) {
-      currentList = verticalList
-    } else {
-      currentList = horizontalList
-    }
+    let currentList = activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList
     const grid = currentList[index]
-    const cells = []
-    for (let i = 0; i < grid.cols * grid.rows; i++) {
-      const col = i % grid.cols
-      const row = Math.floor(i / grid.cols)
-      cells.push({
-        index: i,
-        col: col,
-        row: row,
-        isLastCol: col === grid.cols - 1,
-        isLastRow: row === grid.rows - 1
-      })
-    }
+
     this.setData({
       activeGridIndex: index,
       gridCols: grid.cols,
       gridRows: grid.rows,
-      gridCells: cells,
       selectedCells: []
     })
+
     setTimeout(() => this.calculateGridOverlay(), 100)
   },
 
   onCellTap(e) {
     const index = e.currentTarget.dataset.index
-    const { activeTab, gridCols, gridRows, selectedCells } = this.data
-    const newSelectedCells = [...selectedCells]
-
-    if (activeTab === 0) {
-      const cellIndex = newSelectedCells.indexOf(index)
-      if (cellIndex > -1) {
-        newSelectedCells.splice(cellIndex, 1)
-      } else {
-        newSelectedCells.push(index)
-      }
-    } else if (activeTab === 1) {
-      const col = index % gridCols
-      const colCells = []
-      for (let row = 0; row < gridRows; row++) {
-        colCells.push(row * gridCols + col)
-      }
-      const isColSelected = colCells.every(cell => newSelectedCells.includes(cell))
-      if (isColSelected) {
-        colCells.forEach(cell => {
-          const idx = newSelectedCells.indexOf(cell)
-          if (idx > -1) newSelectedCells.splice(idx, 1)
-        })
-      } else {
-        colCells.forEach(cell => {
-          if (!newSelectedCells.includes(cell)) newSelectedCells.push(cell)
-        })
-      }
-    } else if (activeTab === 2) {
-      const row = Math.floor(index / gridCols)
-      const rowCells = []
-      for (let col = 0; col < gridCols; col++) {
-        rowCells.push(row * gridCols + col)
-      }
-      const isRowSelected = rowCells.every(cell => newSelectedCells.includes(cell))
-      if (isRowSelected) {
-        rowCells.forEach(cell => {
-          const idx = newSelectedCells.indexOf(cell)
-          if (idx > -1) newSelectedCells.splice(idx, 1)
-        })
-      } else {
-        rowCells.forEach(cell => {
-          if (!newSelectedCells.includes(cell)) newSelectedCells.push(cell)
-        })
-      }
-    }
-    this.setData({ selectedCells: newSelectedCells })
+    const { selectedCells } = this.data
+    const idx = selectedCells.indexOf(index)
+    const newSelected = idx > -1 ? selectedCells.filter((_, i) => i !== idx) : [...selectedCells, index]
+    this.setData({ selectedCells: newSelected })
   },
+
+  // ========== 修复：完美跟手拖动 ==========
+  onLineTouchStart(e) {
+    const type = e.currentTarget.dataset.type
+    const index = parseInt(e.currentTarget.dataset.index)
+    const touch = e.touches[0]
+
+    let originPos = 0
+    if (type === 'h') {
+      originPos = this.data.horizontalLines[index].y
+    } else {
+      originPos = this.data.verticalLines[index].x
+    }
+
+    this.setData({
+      lineTouch: {
+        type,
+        index,
+        offset: type === 'h' ? touch.clientY : touch.clientX,
+        originPos
+      }
+    })
+    return true
+  },
+
+  onLineTouchMove(e) {
+    const { lineTouch, gridRect } = this.data
+    if (!lineTouch || !gridRect) return true
+    const touch = e.touches[0]
+
+    if (lineTouch.type === 'h') {
+      let nowY = touch.clientY - lineTouch.offset + lineTouch.originPos
+      nowY = Math.max(0, Math.min(gridRect.height, nowY))
+      let list = [...this.data.horizontalLines]
+      list[lineTouch.index].y = nowY
+      this.setData({ horizontalLines: list })
+    } else {
+      let nowX = touch.clientX - lineTouch.offset + lineTouch.originPos
+      nowX = Math.max(0, Math.min(gridRect.width, nowX))
+      let list = [...this.data.verticalLines]
+      list[lineTouch.index].x = nowX
+      this.setData({ verticalLines: list })
+    }
+    return true
+  },
+
+  onLineTouchEnd() {
+    this.setData({ lineTouch: null })
+    return true
+  },
+  // ======================================
 
   onChooseImage() {
     wx.chooseImage({
@@ -288,7 +261,7 @@ Page({
       success: (res) => {
         const path = res.tempFilePaths[0]
         this.setImageFromPath(path)
-        wx.showToast({ title: '图片已选择', icon: 'success' })
+        wx.showToast({ title: '已选择', icon: 'success' })
       }
     })
   },
@@ -299,5 +272,7 @@ Page({
 
   onBack() {
     wx.navigateBack()
-  }
+  },
+
+  preventMove() {},
 })
