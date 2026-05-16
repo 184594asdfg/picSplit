@@ -80,7 +80,7 @@
           bindtap="onTabChange"
         >{{item.name}}</view>
       </view>
-      <view class="tab-icon">✓</view>
+      <view class="tab-icon tab-confirm" bindtap="onConfirm">✓</view>
     </view>
 
     <view class="mode-bar">
@@ -115,4 +115,6 @@
 
 
   </view>
+
+  <canvas type="2d" id="freeCutCanvas" class="cut-canvas"></canvas>
 </view>

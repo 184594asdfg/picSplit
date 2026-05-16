@@ -5,7 +5,7 @@ Page({
     functions: [
       {
         id: 1,
-        name: '切九图',
+        name: '九宫格切图',
         desc: '将图片切成九宫格'
       },
       {

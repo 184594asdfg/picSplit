@@ -4,25 +4,25 @@ Page({
       { id: 1, icon: '/images/masks/square.png' },
     ],
     selectedShape: 1,
-    gridCells: Array(9).fill(null),
     selectedImage: null,
     currentShapeIcon: '/images/masks/square.png',
 
-    imgX: 0,
-    imgY: 0,
-    startX: 0,
-    startY: 0,
-    isDragging: false,
+    // 预览容器尺寸（px）
+    preW: 0,
+    preH: 0,
+
+    // 图片在预览中的显示尺寸与位置（aspectFit 居中，单位 px）
     imgW: 0,
     imgH: 0,
-    preW: 0,
-    preH: 0
+    imgX: 0,
+    imgY: 0,
+
+    // 原图尺寸
+    originalW: 0,
+    originalH: 0
   },
 
   onLoad() {
-    this.setData({
-      scrollIntoView: 'shape-1'
-    })
     this.getPreviewSize()
   },
 
@@ -34,6 +34,9 @@ Page({
         preW: rect.width,
         preH: rect.height
       })
+      if (this.data.selectedImage && this.data.originalW) {
+        this.applyDisplay(this.data.originalW, this.data.originalH)
+      }
     }).exec()
   },
 
@@ -43,6 +46,22 @@ Page({
     this.setData({
       selectedShape: id,
       currentShapeIcon: shape ? shape.icon : ''
+    })
+  },
+
+  // 按 aspectFit 将图片完整放入预览框，居中显示
+  applyDisplay(iw, ih) {
+    const pw = this.data.preW
+    const ph = this.data.preH
+    if (!pw || !ph || !iw || !ih) return
+    const scale = Math.min(pw / iw, ph / ih)
+    const showW = iw * scale
+    const showH = ih * scale
+    this.setData({
+      imgW: showW,
+      imgH: showH,
+      imgX: (pw - showW) / 2,
+      imgY: (ph - showH) / 2
     })
   },
 
@@ -56,27 +75,16 @@ Page({
         wx.getImageInfo({
           src: path,
           success: (info) => {
-            const iw = info.width
-            const ih = info.height
-            const pw = this.data.preW
-            const ph = this.data.preH
-
-            const scaleW = pw / iw
-            const scaleH = ph / ih
-            const scale = Math.max(scaleW, scaleH)
-
-            const showW = iw * scale
-            const showH = ih * scale
-
             this.setData({
-              selectedImage: path,
-              imgW: showW,
-              imgH: showH,
-              imgX: (pw - showW) / 2,
-              imgY: (ph - showH) / 2
+              selectedImage: info.path || path,
+              originalW: info.width,
+              originalH: info.height
             })
-
+            this.applyDisplay(info.width, info.height)
             wx.showToast({ title: '图片已选择', icon: 'success' })
+          },
+          fail: () => {
+            wx.showToast({ title: '读取图片失败', icon: 'none' })
           }
         })
       }
@@ -94,37 +102,59 @@ Page({
     try {
       await this.ensureAlbumAuth()
 
-      const cropInfo = await this.computeCropInfo()
-      const previewList = []
-      const total = 10
+      const src = this.data.selectedImage
 
-      const pieceW = cropInfo.sw / 3
-      const pieceH = cropInfo.sh / 3
+      // 以最终用于切图的"原始原图"为准重新拿一次真实像素尺寸，
+      // 避免预览阶段缓存到的尺寸与实际原图不一致导致切偏
+      const realInfo = await this.getImageInfoSafe(src)
+      const originalW = realInfo.width
+      const originalH = realInfo.height
+
+      if (!originalW || !originalH) {
+        throw new Error('读取原图尺寸失败')
+      }
+
+      // 严格按横向 3 等分、纵向 3 等分裁切原图
+      // 用整数像素边界严格均分，9 块完整覆盖原图：无间隙、无重叠、无丢失
+      // 不扣除任何"白色缝隙/黑色底"等预览叠加层的宽度
+      const colXs = [
+        0,
+        Math.round(originalW / 3),
+        Math.round((originalW * 2) / 3),
+        originalW
+      ]
+      const rowYs = [
+        0,
+        Math.round(originalH / 3),
+        Math.round((originalH * 2) / 3),
+        originalH
+      ]
+
+      const previewList = []
+      const total = 9
+
+      // 顺序：从上到下，从左到右；全程只对 src（用户上传的原始原图）做裁切
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
           const index = row * 3 + col
           wx.showLoading({ title: `正在保存 ${index + 1}/${total}`, mask: true })
-          const px = cropInfo.sx + col * pieceW
-          const py = cropInfo.sy + row * pieceH
-          const piecePath = await this.cropImageByCanvas(cropInfo.src, px, py, pieceW, pieceH)
+          const px = colXs[col]
+          const py = rowYs[row]
+          const pw = colXs[col + 1] - colXs[col]
+          const ph = rowYs[row + 1] - rowYs[row]
+          const piecePath = await this.cropImageByCanvas(src, px, py, pw, ph)
           await this.saveToAlbum(piecePath)
           previewList.push(piecePath)
         }
       }
 
-      wx.showLoading({ title: `正在保存 ${total}/${total}`, mask: true })
-      const completePath = await this.cropImageByCanvas(cropInfo.src, cropInfo.sx, cropInfo.sy, cropInfo.sw, cropInfo.sh)
-      await this.saveToAlbum(completePath)
-      previewList.push(completePath)
-
       wx.hideLoading()
-      wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 })
 
       setTimeout(() => {
         wx.redirectTo({
-          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
+          url: `/pages/result/result?source=grid&images=${encodeURIComponent(JSON.stringify(previewList))}`
         })
-      }, 1000)
+      }, 500)
     } catch (err) {
       wx.hideLoading()
       const msg = (err && err.errMsg) || (err && err.message) || '保存失败'
@@ -134,6 +164,16 @@ Page({
     } finally {
       this._saving = false
     }
+  },
+
+  getImageInfoSafe(src) {
+    return new Promise((resolve, reject) => {
+      wx.getImageInfo({
+        src,
+        success: (info) => resolve(info),
+        fail: (e) => reject(e)
+      })
+    })
   },
 
   ensureAlbumAuth() {
@@ -173,32 +213,6 @@ Page({
           }
         },
         fail: () => reject(new Error('获取授权信息失败'))
-      })
-    })
-  },
-
-  computeCropInfo() {
-    return new Promise((resolve, reject) => {
-      const { selectedImage, imgX, imgY, imgW, imgH, preW, preH } = this.data
-      wx.getImageInfo({
-        src: selectedImage,
-        success: (info) => {
-          const scale = imgW / info.width
-          const sx = Math.max(0, -imgX / scale)
-          const sy = Math.max(0, -imgY / scale)
-          const sw = Math.min(info.width - sx, preW / scale)
-          const sh = Math.min(info.height - sy, preH / scale)
-          resolve({
-            src: info.path || selectedImage,
-            sx,
-            sy,
-            sw,
-            sh,
-            originalW: info.width,
-            originalH: info.height
-          })
-        },
-        fail: () => reject(new Error('读取图片信息失败'))
       })
     })
   },
@@ -251,47 +265,5 @@ Page({
         fail: reject
       })
     })
-  },
-
-  touchStart(e) {
-    if (!this.data.selectedImage) return
-    this.setData({
-      startX: e.touches[0].clientX,
-      startY: e.touches[0].clientY,
-      isDragging: true
-    })
-  },
-
-  touchMove(e) {
-    if (!this.data.isDragging || !this.data.selectedImage) return
-
-    const dx = e.touches[0].clientX - this.data.startX
-    const dy = e.touches[0].clientY - this.data.startY
-
-    let newX = this.data.imgX + dx
-    let newY = this.data.imgY + dy
-
-    const { preW, preH, imgW, imgH } = this.data
-
-    const minX = preW - imgW
-    const maxX = 0
-    const minY = preH - imgH
-    const maxY = 0
-
-    newX = Math.max(minX, Math.min(maxX, newX))
-    newY = Math.max(minY, Math.min(maxY, newY))
-
-    this.setData({
-      imgX: newX,
-      imgY: newY,
-      startX: e.touches[0].clientX,
-      startY: e.touches[0].clientY
-    })
-    
-    return false // 加这一行：阻止默认滚动行为
-  },
-
-  touchEnd() {
-    this.setData({ isDragging: false })
   }
 })

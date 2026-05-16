@@ -1,5 +1,18 @@
 <view class="container">
 
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top:{{statusBarHeight}}px;">
+    <view class="nav-content" style="height:{{navBarHeight}}px;">
+      <view class="nav-back" bindtap="onBack">
+        <view class="back-arrow"></view>
+      </view>
+      <view class="nav-title">切图结果</view>
+    </view>
+  </view>
+
+  <!-- 占位，避免内容被遮挡 -->
+  <view class="nav-placeholder" style="height:{{statusBarHeight + navBarHeight}}px;"></view>
+
 
   <!-- 功能按钮区 -->
   <view class="action-section">
@@ -11,18 +24,18 @@
       <view class="action-icon icon-collage">▣</view>
       <view class="action-text">自由切图</view>
     </view>
-    <view class="action-item" bindtap="onActionTap" data-action="share">
+    <button class="action-item action-btn" open-type="share">
       <view class="action-icon icon-share">⇧</view>
       <view class="action-text">分享给朋友</view>
-    </view>
+    </button>
   </view>
 
   <!-- 下载顺序标题 -->
   <view class="order-title">下载后的顺序</view>
   <view class="expand-icon" bindtap="onToggleExpand">⌄</view>
 
-  <!-- 宫格预览区 -->
-  <view class="preview-grid">
+  <!-- 宫格预览区：九宫格来源一行 3 个，其他一行 4 个 -->
+  <view class="preview-grid {{gridColumns === 3 ? 'cols-3' : 'cols-4'}}">
     <view 
       wx:for="{{previewList}}" 
       wx:key="index"
@@ -34,7 +47,7 @@
         wx:if="{{item}}" 
         class="preview-image" 
         src="{{item}}" 
-        mode="aspectFill"
+        mode="widthFix"
       />
       <view class="order-number">{{index + 1}}</view>
     </view>

@@ -446,5 +446,320 @@ Page({
 
   onBack() {
     wx.navigateBack()
+  },
+
+  // ========== 点击 ✓ 触发保存 ==========
+  async onConfirm() {
+    if (!this.data.selectedImage) {
+      wx.showToast({ title: '请先选择图片', icon: 'none' })
+      return
+    }
+    if (!this.data.imgWidth || !this.data.imgHeight) {
+      wx.showToast({ title: '图片信息加载中', icon: 'none' })
+      return
+    }
+    if (this._saving) return
+    this._saving = true
+
+    try {
+      await this.ensureAlbumAuth()
+
+      const cellRects = this.computeCellRects()
+      const previewList = []
+      const total = cellRects.length + 1
+
+      for (let i = 0; i < cellRects.length; i++) {
+        const r = cellRects[i]
+        wx.showLoading({ title: `正在保存 ${i + 1}/${total}`, mask: true })
+        const piecePath = await this.cropImageByCanvas(this.data.selectedImage, r.x, r.y, r.w, r.h)
+        await this.saveToAlbum(piecePath)
+        previewList.push(piecePath)
+      }
+
+      wx.showLoading({ title: `正在保存 ${total}/${total}`, mask: true })
+      const completePath = await this.renderCompleteImage()
+      await this.saveToAlbum(completePath)
+      previewList.push(completePath)
+
+      wx.hideLoading()
+      wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 })
+
+      setTimeout(() => {
+        wx.redirectTo({
+          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
+        })
+      }, 1000)
+    } catch (err) {
+      wx.hideLoading()
+      const msg = (err && err.errMsg) || (err && err.message) || '保存失败'
+      if (msg.indexOf('cancel') === -1 && msg.indexOf('取消') === -1) {
+        wx.showToast({ title: msg, icon: 'none' })
+      }
+    } finally {
+      this._saving = false
+    }
+  },
+
+  // 计算每个格子在「原图坐标系」中的矩形
+  computeCellRects() {
+    const {
+      modeType, gridCols, gridRows,
+      colFractions, rowFractions,
+      imgWidth, imgHeight,
+      fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY
+    } = this.data
+    const rects = []
+
+    if (modeType === 'free') {
+      const colXs = []
+      let cumX = 0
+      for (let i = 0; i < gridCols; i++) {
+        colXs.push(cumX * imgWidth)
+        cumX += colFractions[i]
+      }
+      colXs.push(imgWidth)
+
+      const rowYs = []
+      let cumY = 0
+      for (let i = 0; i < gridRows; i++) {
+        rowYs.push(cumY * imgHeight)
+        cumY += rowFractions[i]
+      }
+      rowYs.push(imgHeight)
+
+      for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+          rects.push({
+            x: colXs[col],
+            y: rowYs[row],
+            w: colXs[col + 1] - colXs[col],
+            h: rowYs[row + 1] - rowYs[row]
+          })
+        }
+      }
+    } else {
+      // fixed 模式：网格仅占图片的正方形子区域
+      const display = this._displaySize
+      if (!display || !display.width || !display.height) return rects
+      const scale = imgWidth / display.width
+      const baseX = fixedOffsetX * scale
+      const baseY = fixedOffsetY * scale
+      const totalW = fixedGridW * scale
+      const totalH = fixedGridH * scale
+      const cellW = totalW / gridCols
+      const cellH = totalH / gridRows
+
+      for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+          rects.push({
+            x: baseX + col * cellW,
+            y: baseY + row * cellH,
+            w: cellW,
+            h: cellH
+          })
+        }
+      }
+    }
+
+    return rects
+  },
+
+  // 生成完整图（保留分割线，固定模式保留正方形外框）
+  renderCompleteImage() {
+    return new Promise((resolve, reject) => {
+      const {
+        modeType, gridCols, gridRows,
+        colFractions, rowFractions,
+        imgWidth, imgHeight,
+        fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY
+      } = this.data
+
+      const query = wx.createSelectorQuery().in(this)
+      query.select('#freeCutCanvas').fields({ node: true, size: true }).exec((res) => {
+        if (!res || !res[0] || !res[0].node) {
+          reject(new Error('canvas 节点获取失败'))
+          return
+        }
+        const canvas = res[0].node
+        const ctx = canvas.getContext('2d')
+        canvas.width = imgWidth
+        canvas.height = imgHeight
+
+        const img = canvas.createImage()
+        img.onload = () => {
+          ctx.clearRect(0, 0, imgWidth, imgHeight)
+          ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
+
+          const lineWidth = Math.max(2, Math.round(Math.min(imgWidth, imgHeight) * 0.005))
+
+          if (modeType === 'free') {
+            let cumX = 0
+            for (let i = 0; i < gridCols - 1; i++) {
+              cumX += colFractions[i]
+              const x = cumX * imgWidth
+              this.drawAlternatingLine(ctx, x, 0, x, imgHeight, lineWidth)
+            }
+            let cumY = 0
+            for (let i = 0; i < gridRows - 1; i++) {
+              cumY += rowFractions[i]
+              const y = cumY * imgHeight
+              this.drawAlternatingLine(ctx, 0, y, imgWidth, y, lineWidth)
+            }
+          } else {
+            const display = this._displaySize
+            if (display && display.width) {
+              const scale = imgWidth / display.width
+              const baseX = fixedOffsetX * scale
+              const baseY = fixedOffsetY * scale
+              const totalW = fixedGridW * scale
+              const totalH = fixedGridH * scale
+              const cellW = totalW / gridCols
+              const cellH = totalH / gridRows
+
+              this.drawAlternatingLine(ctx, baseX, baseY, baseX + totalW, baseY, lineWidth)
+              this.drawAlternatingLine(ctx, baseX, baseY + totalH, baseX + totalW, baseY + totalH, lineWidth)
+              this.drawAlternatingLine(ctx, baseX, baseY, baseX, baseY + totalH, lineWidth)
+              this.drawAlternatingLine(ctx, baseX + totalW, baseY, baseX + totalW, baseY + totalH, lineWidth)
+
+              for (let i = 1; i < gridCols; i++) {
+                const x = baseX + i * cellW
+                this.drawAlternatingLine(ctx, x, baseY, x, baseY + totalH, lineWidth)
+              }
+              for (let i = 1; i < gridRows; i++) {
+                const y = baseY + i * cellH
+                this.drawAlternatingLine(ctx, baseX, y, baseX + totalW, y, lineWidth)
+              }
+            }
+          }
+
+          wx.canvasToTempFilePath({
+            canvas,
+            fileType: 'jpg',
+            quality: 1,
+            success: (r) => resolve(r.tempFilePath),
+            fail: reject
+          })
+        }
+        img.onerror = () => reject(new Error('图片解码失败'))
+        img.src = this.data.selectedImage
+      })
+    })
+  },
+
+  // 绘制黑白相间虚线（与界面网格视觉一致）
+  drawAlternatingLine(ctx, x1, y1, x2, y2, lineWidth) {
+    const dash = Math.max(4, lineWidth * 4)
+    ctx.save()
+    ctx.lineWidth = lineWidth
+    ctx.lineCap = 'butt'
+
+    ctx.setLineDash([dash, dash])
+    ctx.lineDashOffset = 0
+    ctx.strokeStyle = '#000000'
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
+    ctx.stroke()
+
+    ctx.setLineDash([dash, dash])
+    ctx.lineDashOffset = -dash
+    ctx.strokeStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
+    ctx.stroke()
+
+    ctx.restore()
+  },
+
+  cropImageByCanvas(src, sx, sy, sw, sh) {
+    return new Promise((resolve, reject) => {
+      const query = wx.createSelectorQuery().in(this)
+      query.select('#freeCutCanvas').fields({ node: true, size: true }).exec((res) => {
+        if (!res || !res[0] || !res[0].node) {
+          reject(new Error('canvas 节点获取失败'))
+          return
+        }
+        const canvas = res[0].node
+        const ctx = canvas.getContext('2d')
+
+        const outputW = Math.max(1, Math.round(sw))
+        const outputH = Math.max(1, Math.round(sh))
+        canvas.width = outputW
+        canvas.height = outputH
+
+        const img = canvas.createImage()
+        img.onload = () => {
+          ctx.clearRect(0, 0, outputW, outputH)
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputW, outputH)
+          wx.canvasToTempFilePath({
+            canvas,
+            x: 0,
+            y: 0,
+            width: outputW,
+            height: outputH,
+            destWidth: outputW,
+            destHeight: outputH,
+            fileType: 'jpg',
+            quality: 1,
+            success: (r) => resolve(r.tempFilePath),
+            fail: (e) => reject(e)
+          })
+        }
+        img.onerror = () => reject(new Error('图片解码失败'))
+        img.src = src
+      })
+    })
+  },
+
+  ensureAlbumAuth() {
+    return new Promise((resolve, reject) => {
+      wx.getSetting({
+        success: (res) => {
+          const auth = res.authSetting['scope.writePhotosAlbum']
+          if (auth === true) {
+            resolve()
+          } else if (auth === false) {
+            wx.showModal({
+              title: '保存提示',
+              content: '需要授权保存图片到相册，是否前往设置？',
+              success: (modalRes) => {
+                if (!modalRes.confirm) {
+                  reject(new Error('用户取消授权'))
+                  return
+                }
+                wx.openSetting({
+                  success: (setRes) => {
+                    if (setRes.authSetting['scope.writePhotosAlbum']) {
+                      resolve()
+                    } else {
+                      reject(new Error('未授权保存到相册'))
+                    }
+                  },
+                  fail: () => reject(new Error('打开设置失败'))
+                })
+              }
+            })
+          } else {
+            wx.authorize({
+              scope: 'scope.writePhotosAlbum',
+              success: resolve,
+              fail: () => reject(new Error('未授权保存到相册'))
+            })
+          }
+        },
+        fail: () => reject(new Error('获取授权信息失败'))
+      })
+    })
+  },
+
+  saveToAlbum(filePath) {
+    return new Promise((resolve, reject) => {
+      wx.saveImageToPhotosAlbum({
+        filePath,
+        success: resolve,
+        fail: reject
+      })
+    })
   }
 })

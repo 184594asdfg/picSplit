@@ -254,6 +254,14 @@ page {
   color: #666;
 }
 
+.tab-confirm {
+  color: #1890ff;
+  font-weight: 600;
+}
+.tab-confirm:active {
+  opacity: 0.6;
+}
+
 .tab-group {
   flex: 1;
   display: flex;
@@ -400,4 +408,14 @@ page {
 
 .btn:active {
   opacity: 0.8;
+}
+
+.cut-canvas {
+  position: fixed;
+  left: -10000px;
+  top: -10000px;
+  width: 300px;
+  height: 300px;
+  pointer-events: none;
+  z-index: -1;
 }
