@@ -39,4 +39,6 @@
       </view>
     </view>
   </view>
+
+  <canvas type="2d" id="cutCanvas" class="cut-canvas"></canvas>
 </view>

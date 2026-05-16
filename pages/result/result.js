@@ -28,9 +28,6 @@ Page({
       case 'collage':
         wx.showToast({ title: '自由拼图功能开发中', icon: 'none' })
         break
-      case 'split':
-        wx.redirectTo({ url: '/pages/freeCut/freeCut' })
-        break
       case 'share':
         this.onShare()
         break

@@ -1,14 +1,5 @@
 <view class="container">
-  <!-- 顶部导航栏 -->
-  <view class="nav-bar">
-    <view class="back-btn" bindtap="onBack">&lt;</view>
-    <view class="page-title">图片已保存</view>
-    <view class="window-controls">
-      <view class="window-btn">•••</view>
-      <view class="window-btn">—</view>
-      <view class="window-btn">⦿</view>
-    </view>
-  </view>
+
 
   <!-- 功能按钮区 -->
   <view class="action-section">
@@ -18,11 +9,7 @@
     </view>
     <view class="action-item" bindtap="onActionTap" data-action="collage">
       <view class="action-icon icon-collage">▣</view>
-      <view class="action-text">自由拼图</view>
-    </view>
-    <view class="action-item" bindtap="onActionTap" data-action="split">
-      <view class="action-icon icon-split">▦</view>
-      <view class="action-text">分割图片</view>
+      <view class="action-text">自由切图</view>
     </view>
     <view class="action-item" bindtap="onActionTap" data-action="share">
       <view class="action-icon icon-share">⇧</view>
