@@ -7,6 +7,7 @@ Page({
     imgHeight: 0,
     previewWidth: 0,
     previewHeight: 0,
+    gridOverlayStyle: '',
     modeType: 'fixed',
     activeTab: 0,
     activeGridIndex: 0,
@@ -17,7 +18,11 @@ Page({
       { cols: 3, rows: 3, name: '九宫格' },
       { cols: 4, rows: 4, name: '十六宫格' },
       { cols: 3, rows: 2, name: '3×2' },
-      { cols: 2, rows: 3, name: '2×3' }
+      { cols: 2, rows: 3, name: '2×3' },
+      { cols: 2, rows: 4, name: '2×4' },
+      { cols: 4, rows: 2, name: '4×2' },
+      { cols: 3, rows: 4, name: '3×4' },
+      { cols: 4, rows: 3, name: '4×3' }
     ],
     tabList: [
       { index: 0, name: '网格' },
@@ -47,24 +52,50 @@ Page({
   },
 
   setImageFromPath(path) {
-    // 先立即设置图片显示
-    this.setData({
-      selectedImage: path
-    })
-    // 再获取图片信息
+    this.setData({ selectedImage: path })
     wx.getImageInfo({
       src: path,
       success: (info) => {
-        const iw = info.width
-        const ih = info.height
-        this.setData({
-          imgWidth: iw,
-          imgHeight: ih
-        })
-      },
-      fail: (err) => {
-        console.error('获取图片信息失败', err)
+        this.setData({ imgWidth: info.width, imgHeight: info.height })
+        setTimeout(() => this.calculateGridOverlay(), 100)
       }
+    })
+  },
+
+  onImageLoad() {
+    this.calculateGridOverlay()
+  },
+
+  calculateGridOverlay() {
+    const { imgWidth, imgHeight } = this.data
+    if (!imgWidth || !imgHeight) return
+
+    const query = wx.createSelectorQuery().in(this)
+    query.select('.image-container').boundingClientRect()
+    query.exec((res) => {
+      const container = res[0]
+      if (!container) return
+
+      const imgRatio = imgWidth / imgHeight
+      const containerRatio = container.width / container.height
+
+      let displayWidth, displayHeight, offsetX, offsetY
+
+      if (imgRatio > containerRatio) {
+        displayWidth = container.width
+        displayHeight = container.width / imgRatio
+        offsetX = 0
+        offsetY = (container.height - displayHeight) / 2
+      } else {
+        displayWidth = container.height * imgRatio
+        displayHeight = container.height
+        offsetX = (container.width - displayWidth) / 2
+        offsetY = 0
+      }
+
+      this.setData({
+        gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
+      })
     })
   },
 
@@ -78,6 +109,8 @@ Page({
         index: i,
         col: col,
         row: row,
+        isFirstRow: row === 0,
+        isFirstCol: col === 0,
         isLastCol: col === gridCols - 1,
         isLastRow: row === gridRows - 1
       })

@@ -70,11 +70,29 @@ page {
   align-items: center;
 }
 
-.preview-image {
+.image-container {
+  position: relative;
   width: 90%;
   height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
   display: block;
   object-fit: contain;
+}
+
+.grid-overlay {
+  position: absolute;
+  display: grid;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .preview-placeholder {
@@ -93,15 +111,7 @@ page {
   font-size: 28rpx;
 }
 
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  box-sizing: border-box;
-  border-right: 1px dashed #000;
-  border-bottom: 1px dashed #000;
-  pointer-events: none;
-}
+
 
 .grid-overlay .grid-cell {
   pointer-events: auto;
@@ -109,9 +119,55 @@ page {
 
 .grid-cell {
   box-sizing: border-box;
-  border-top: 1px dashed #000;
-  border-left: 1px dashed #000;
   background-color: transparent;
+  position: relative;
+}
+
+/* 使用linear-gradient绘制等距黑方块+白方块 - 参考test2.html */
+.grid-cell::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background-image: linear-gradient(
+    to right,
+    #000 0px,
+    #000 8rpx,
+    #fff 8rpx,
+    #fff 16rpx
+  );
+  background-size: 16rpx 100%;
+  background-repeat: repeat-x;
+}
+
+.grid-cell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4rpx;
+  background-image: linear-gradient(
+    to bottom,
+    #000 0px,
+    #000 8rpx,
+    #fff 8rpx,
+    #fff 16rpx
+  );
+  background-size: 100% 16rpx;
+  background-repeat: repeat-y;
+}
+
+/* 最后一行取消底边线 */
+.grid-cell.no-bottom-border::before {
+  display: none;
+}
+
+/* 最后一列取消右边线 */
+.grid-cell.no-right-border::after {
+  display: none;
 }
 
 .grid-overlay div.selected {
@@ -205,15 +261,18 @@ page {
 /* 网格图标：彻底无重叠 最终版 */
 .grid-options {
   display: flex;
-  justify-content: space-between;
   text-align: center;
   font-size: 24rpx;
-  gap: 16rpx;
-  padding: 0 32rpx;
+  gap: 80rpx;
+  padding: 0 0rpx 40rpx 32rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
 }
 
 .grid-item {
-  flex: 1;
+  flex-shrink: 0;
+  width: 70rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -254,11 +313,6 @@ page {
   font-weight: 500;
 }
 
-.bottom-bar {
-  display: flex;
-  gap: 30rpx;
-  padding: 8rpx 32rpx 0;
-}
 
 .btn {
   flex: 1;

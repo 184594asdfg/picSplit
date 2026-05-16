@@ -2,27 +2,28 @@
 
   <view class="preview">
     <view class="preview-box">
-      <image
-        class="preview-image"
-        wx:if="{{selectedImage}}"
-        src="{{selectedImage}}"
-        mode="aspectFit"
-      ></image>
       <view wx:if="{{!selectedImage}}" class="preview-placeholder" bindtap="onChooseImage">
         <text class="placeholder-text">点击选择图片</text>
       </view>
-      <view
-        class="grid-overlay {{modeType}}"
-        wx:if="{{selectedImage}}"
-        style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);"
-      >
-        <view 
-          wx:for="{{gridCells}}" 
-          wx:key="index"
-          class="grid-cell {{selectedCells.includes(item.index) ? 'selected' : ''}}"
-          data-index="{{item.index}}"
-          bindtap="onCellTap"
-        ></view>
+      <view class="image-container" wx:if="{{selectedImage}}">
+        <image
+          class="preview-image"
+          src="{{selectedImage}}"
+          mode="aspectFit"
+          bindload="onImageLoad"
+        ></image>
+        <view
+          class="grid-overlay {{modeType}}"
+          style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);{{gridOverlayStyle}}"
+        >
+          <view 
+            wx:for="{{gridCells}}" 
+            wx:key="index"
+            class="grid-cell {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+            data-index="{{item.index}}"
+            bindtap="onCellTap"
+          ></view>
+        </view>
       </view>
     </view>
   </view>
@@ -72,13 +73,6 @@
       </view>
     </view>
 
-    <view class="bottom-bar">
-      <view class="btn btn-outline" bindtap="onChooseImage">
-        <text class="btn-text">选择图片</text>
-      </view>
-      <view class="btn btn-primary" bindtap="onSaveImage">
-        <text class="btn-text">保存图片</text>
-      </view>
-    </view>
+
   </view>
 </view>
