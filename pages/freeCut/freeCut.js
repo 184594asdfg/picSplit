@@ -47,16 +47,23 @@ Page({
   },
 
   setImageFromPath(path) {
+    // 先立即设置图片显示
+    this.setData({
+      selectedImage: path
+    })
+    // 再获取图片信息
     wx.getImageInfo({
       src: path,
       success: (info) => {
         const iw = info.width
         const ih = info.height
         this.setData({
-          selectedImage: path,
           imgWidth: iw,
           imgHeight: ih
         })
+      },
+      fail: (err) => {
+        console.error('获取图片信息失败', err)
       }
     })
   },
