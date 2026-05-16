@@ -24,6 +24,20 @@ Page({
       { cols: 3, rows: 4, name: '3×4' },
       { cols: 4, rows: 3, name: '4×3' }
     ],
+    verticalList: [
+      { cols: 2, rows: 1, name: '2张' },
+      { cols: 3, rows: 1, name: '3张' },
+      { cols: 4, rows: 1, name: '4张' },
+      { cols: 5, rows: 1, name: '5张' },
+      { cols: 6, rows: 1, name: '6张' }
+    ],
+    horizontalList: [
+      { cols: 1, rows: 2, name: '2张' },
+      { cols: 1, rows: 3, name: '3张' },
+      { cols: 1, rows: 4, name: '4张' },
+      { cols: 1, rows: 5, name: '5张' },
+      { cols: 1, rows: 6, name: '6张' }
+    ],
     tabList: [
       { index: 0, name: '网格' },
       { index: 1, name: '纵向' },
@@ -136,8 +150,10 @@ Page({
     const index = parseInt(e.currentTarget.dataset.index, 10)
     this.setData({
       activeTab: index,
+      activeGridIndex: 0,
       selectedCells: []
     })
+    this.onGridSelect({ currentTarget: { dataset: { index: 0 } } })
   },
 
   onModeChange(e) {
@@ -147,7 +163,16 @@ Page({
 
   onGridSelect(e) {
     const index = e.currentTarget.dataset.index
-    const grid = this.data.gridList[index]
+    const { activeTab, gridList, verticalList, horizontalList } = this.data
+    let currentList
+    if (activeTab === 0) {
+      currentList = gridList
+    } else if (activeTab === 1) {
+      currentList = verticalList
+    } else {
+      currentList = horizontalList
+    }
+    const grid = currentList[index]
     const cells = []
     for (let i = 0; i < grid.cols * grid.rows; i++) {
       const col = i % grid.cols

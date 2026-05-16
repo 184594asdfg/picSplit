@@ -61,7 +61,7 @@
     <view class="grid-options">
       <view
         class="grid-item {{activeGridIndex === index ? 'active' : ''}}"
-        wx:for="{{gridList}}"
+        wx:for="{{activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList}}"
         wx:key="index"
         data-index="{{index}}"
         bindtap="onGridSelect"
