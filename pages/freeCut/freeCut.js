@@ -13,8 +13,6 @@ Page({
     activeGridIndex: 0,
     gridCols: 2,
     gridRows: 2,
-    fixedCols: 2,
-    fixedRows: 2,
     gridList: [
       { cols: 2, rows: 2, name: '四宫格' },
       { cols: 3, rows: 3, name: '九宫格' },
@@ -56,9 +54,7 @@ Page({
     const navBarHeight = (menuButton.top - statusBarHeight) * 2 + menuButton.height
     this.setData({
       statusBarHeight,
-      navBarHeight,
-      gridCols: this.data.fixedCols,
-      gridRows: this.data.fixedRows
+      navBarHeight
     })
     this.initGrid()
     
@@ -85,7 +81,7 @@ Page({
   },
 
   calculateGridOverlay() {
-    const { imgWidth, imgHeight, modeType, fixedCols, fixedRows } = this.data
+    const { imgWidth, imgHeight, modeType, gridCols, gridRows } = this.data
     if (!imgWidth || !imgHeight) return
 
     const query = wx.createSelectorQuery().in(this)
@@ -95,22 +91,30 @@ Page({
       if (!container) return
 
       if (modeType === 'fixed') {
-        // 固定模式：计算统一正方形格子
-        const cellWidth = imgWidth / fixedCols
-        const cellHeight = imgHeight / fixedRows
-        const cellSize = Math.min(cellWidth, cellHeight)
+        // 固定模式：确保每个格子都是正方形
+        // 1. 计算图片在容器中的显示尺寸（与自由模式一致）
+        const imgRatio = imgWidth / imgHeight
+        const containerRatio = container.width / container.height
         
-        const gridWidth = cellSize * fixedCols
-        const gridHeight = cellSize * fixedRows
+        let imgDisplayWidth, imgDisplayHeight
+        if (imgRatio > containerRatio) {
+          imgDisplayWidth = container.width
+          imgDisplayHeight = container.width / imgRatio
+        } else {
+          imgDisplayWidth = container.height * imgRatio
+          imgDisplayHeight = container.height
+        }
         
-        // 计算缩放比例，确保网格在容器内
-        const scaleX = container.width / gridWidth
-        const scaleY = container.height / gridHeight
-        const scale = Math.min(scaleX, scaleY)
+        // 2. 计算正方形格子的最大可能边长
+        const maxCellWidth = imgDisplayWidth / gridCols
+        const maxCellHeight = imgDisplayHeight / gridRows
+        const cellSize = Math.min(maxCellWidth, maxCellHeight)
         
-        const finalWidth = gridWidth * scale
-        const finalHeight = gridHeight * scale
+        // 3. 计算网格最终尺寸（确保宽高比 = cols:rows）
+        const finalWidth = cellSize * gridCols
+        const finalHeight = cellSize * gridRows
         
+        // 4. 计算居中偏移
         const offsetX = (container.width - finalWidth) / 2
         const offsetY = (container.height - finalHeight) / 2
         
@@ -189,38 +193,6 @@ Page({
   onModeChange(e) {
     const type = e.currentTarget.dataset.type
     this.setData({ modeType: type })
-    if (type === 'fixed') {
-      // 切换到固定模式时，使用fixedCols和fixedRows
-      this.setData({
-        gridCols: this.data.fixedCols,
-        gridRows: this.data.fixedRows
-      })
-      this.initGrid()
-    }
-    setTimeout(() => this.calculateGridOverlay(), 100)
-  },
-
-  onFixedColsChange(e) {
-    const delta = parseInt(e.currentTarget.dataset.delta)
-    let newCols = this.data.fixedCols + delta
-    newCols = Math.max(1, Math.min(10, newCols))
-    this.setData({
-      fixedCols: newCols,
-      gridCols: newCols
-    })
-    this.initGrid()
-    setTimeout(() => this.calculateGridOverlay(), 100)
-  },
-
-  onFixedRowsChange(e) {
-    const delta = parseInt(e.currentTarget.dataset.delta)
-    let newRows = this.data.fixedRows + delta
-    newRows = Math.max(1, Math.min(10, newRows))
-    this.setData({
-      fixedRows: newRows,
-      gridRows: newRows
-    })
-    this.initGrid()
     setTimeout(() => this.calculateGridOverlay(), 100)
   },
 
