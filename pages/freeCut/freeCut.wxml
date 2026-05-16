@@ -19,7 +19,7 @@
           <view 
             wx:for="{{gridCells}}" 
             wx:key="index"
-            class="grid-cell {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+            class="grid-cell {{modeType}} {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
             data-index="{{item.index}}"
             bindtap="onCellTap"
           ></view>
@@ -58,7 +58,26 @@
       </view>
     </view>
 
-    <view class="grid-options">
+    <view class="fixed-controls" wx:if="{{modeType === 'fixed'}}">
+      <view class="control-item">
+        <text class="control-label">横向份数</text>
+        <view class="stepper">
+          <view class="stepper-btn" bindtap="onFixedColsChange" data-delta="-1">-</view>
+          <view class="stepper-value">{{fixedCols}}</view>
+          <view class="stepper-btn" bindtap="onFixedColsChange" data-delta="1">+</view>
+        </view>
+      </view>
+      <view class="control-item">
+        <text class="control-label">纵向份数</text>
+        <view class="stepper">
+          <view class="stepper-btn" bindtap="onFixedRowsChange" data-delta="-1">-</view>
+          <view class="stepper-value">{{fixedRows}}</view>
+          <view class="stepper-btn" bindtap="onFixedRowsChange" data-delta="1">+</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="grid-options" wx:if="{{modeType === 'free'}}">
       <view
         class="grid-item {{activeGridIndex === index ? 'active' : ''}}"
         wx:for="{{activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList}}"

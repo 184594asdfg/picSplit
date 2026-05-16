@@ -95,6 +95,11 @@ page {
   overflow: hidden;
 }
 
+/* 固定模式下的完整实线外框 */
+.grid-overlay.fixed {
+  border: 2rpx solid #000;
+}
+
 .preview-placeholder {
   width: 100%;
   min-height: 300rpx;
@@ -256,6 +261,55 @@ page {
   color: #000;
   font-weight: 500;
   box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.1);
+}
+
+/* 固定模式控制区 */
+.fixed-controls {
+  display: flex;
+  gap: 40rpx;
+  padding: 0 32rpx 20rpx;
+}
+
+.control-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.control-label {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  background-color: #e5e5e5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.stepper-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #007aff;
+  background-color: #f5f5f5;
+}
+
+.stepper-btn:active {
+  background-color: #e0e0e0;
+}
+
+.stepper-value {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #000;
 }
 
 /* 网格图标：彻底无重叠 最终版 */

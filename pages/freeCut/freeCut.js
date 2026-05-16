@@ -13,6 +13,8 @@ Page({
     activeGridIndex: 0,
     gridCols: 2,
     gridRows: 2,
+    fixedCols: 2,
+    fixedRows: 2,
     gridList: [
       { cols: 2, rows: 2, name: '四宫格' },
       { cols: 3, rows: 3, name: '九宫格' },
@@ -54,7 +56,9 @@ Page({
     const navBarHeight = (menuButton.top - statusBarHeight) * 2 + menuButton.height
     this.setData({
       statusBarHeight,
-      navBarHeight
+      navBarHeight,
+      gridCols: this.data.fixedCols,
+      gridRows: this.data.fixedRows
     })
     this.initGrid()
     
@@ -81,7 +85,7 @@ Page({
   },
 
   calculateGridOverlay() {
-    const { imgWidth, imgHeight } = this.data
+    const { imgWidth, imgHeight, modeType, fixedCols, fixedRows } = this.data
     if (!imgWidth || !imgHeight) return
 
     const query = wx.createSelectorQuery().in(this)
@@ -90,26 +94,52 @@ Page({
       const container = res[0]
       if (!container) return
 
-      const imgRatio = imgWidth / imgHeight
-      const containerRatio = container.width / container.height
-
-      let displayWidth, displayHeight, offsetX, offsetY
-
-      if (imgRatio > containerRatio) {
-        displayWidth = container.width
-        displayHeight = container.width / imgRatio
-        offsetX = 0
-        offsetY = (container.height - displayHeight) / 2
+      if (modeType === 'fixed') {
+        // 固定模式：计算统一正方形格子
+        const cellWidth = imgWidth / fixedCols
+        const cellHeight = imgHeight / fixedRows
+        const cellSize = Math.min(cellWidth, cellHeight)
+        
+        const gridWidth = cellSize * fixedCols
+        const gridHeight = cellSize * fixedRows
+        
+        // 计算缩放比例，确保网格在容器内
+        const scaleX = container.width / gridWidth
+        const scaleY = container.height / gridHeight
+        const scale = Math.min(scaleX, scaleY)
+        
+        const finalWidth = gridWidth * scale
+        const finalHeight = gridHeight * scale
+        
+        const offsetX = (container.width - finalWidth) / 2
+        const offsetY = (container.height - finalHeight) / 2
+        
+        this.setData({
+          gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${finalWidth}px;height:${finalHeight}px;`
+        })
       } else {
-        displayWidth = container.height * imgRatio
-        displayHeight = container.height
-        offsetX = (container.width - displayWidth) / 2
-        offsetY = 0
-      }
+        // 自由模式：原有逻辑
+        const imgRatio = imgWidth / imgHeight
+        const containerRatio = container.width / container.height
 
-      this.setData({
-        gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
-      })
+        let displayWidth, displayHeight, offsetX, offsetY
+
+        if (imgRatio > containerRatio) {
+          displayWidth = container.width
+          displayHeight = container.width / imgRatio
+          offsetX = 0
+          offsetY = (container.height - displayHeight) / 2
+        } else {
+          displayWidth = container.height * imgRatio
+          displayHeight = container.height
+          offsetX = (container.width - displayWidth) / 2
+          offsetY = 0
+        }
+
+        this.setData({
+          gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
+        })
+      }
     })
   },
 
@@ -159,6 +189,39 @@ Page({
   onModeChange(e) {
     const type = e.currentTarget.dataset.type
     this.setData({ modeType: type })
+    if (type === 'fixed') {
+      // 切换到固定模式时，使用fixedCols和fixedRows
+      this.setData({
+        gridCols: this.data.fixedCols,
+        gridRows: this.data.fixedRows
+      })
+      this.initGrid()
+    }
+    setTimeout(() => this.calculateGridOverlay(), 100)
+  },
+
+  onFixedColsChange(e) {
+    const delta = parseInt(e.currentTarget.dataset.delta)
+    let newCols = this.data.fixedCols + delta
+    newCols = Math.max(1, Math.min(10, newCols))
+    this.setData({
+      fixedCols: newCols,
+      gridCols: newCols
+    })
+    this.initGrid()
+    setTimeout(() => this.calculateGridOverlay(), 100)
+  },
+
+  onFixedRowsChange(e) {
+    const delta = parseInt(e.currentTarget.dataset.delta)
+    let newRows = this.data.fixedRows + delta
+    newRows = Math.max(1, Math.min(10, newRows))
+    this.setData({
+      fixedRows: newRows,
+      gridRows: newRows
+    })
+    this.initGrid()
+    setTimeout(() => this.calculateGridOverlay(), 100)
   },
 
   onGridSelect(e) {
