@@ -14,15 +14,55 @@
         ></image>
         <view
           class="grid-overlay {{modeType}}"
-          style="grid-template-columns:repeat({{gridCols}},1fr);grid-template-rows:repeat({{gridRows}},1fr);{{gridOverlayStyle}}"
+          style="{{gridOverlayStyle}}"
         >
-          <view 
-            wx:for="{{gridCells}}" 
-            wx:key="index"
-            class="grid-cell {{modeType}} {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
-            data-index="{{item.index}}"
-            bindtap="onCellTap"
-          ></view>
+          <view
+            class="grid-frame {{modeType}}"
+            style="{{frameStyle}}"
+            bindtouchstart="onFrameTouchStart"
+            bindtouchmove="onFrameTouchMove"
+            bindtouchend="onFrameTouchEnd"
+            bindtouchcancel="onFrameTouchEnd"
+          >
+            <view
+              wx:for="{{gridCells}}"
+              wx:key="index"
+              class="grid-cell {{selectedCells.includes(item.index) ? 'selected' : ''}} {{item.isFirstRow ? 'no-top-border' : ''}} {{item.isFirstCol ? 'no-left-border' : ''}} {{item.isLastCol ? 'no-right-border' : ''}} {{item.isLastRow ? 'no-bottom-border' : ''}}"
+              data-index="{{item.index}}"
+              bindtap="onCellTap"
+            ></view>
+          </view>
+
+          <block wx:if="{{modeType === 'free'}}">
+            <view
+              wx:for="{{colDividers}}"
+              wx:for-item="pos"
+              wx:for-index="i"
+              wx:key="i"
+              class="divider divider-vertical"
+              style="left:{{pos}}%;"
+              data-type="col"
+              data-index="{{i}}"
+              catchtouchstart="onDividerTouchStart"
+              catchtouchmove="onDividerTouchMove"
+              catchtouchend="onDividerTouchEnd"
+              catchtouchcancel="onDividerTouchEnd"
+            ></view>
+            <view
+              wx:for="{{rowDividers}}"
+              wx:for-item="pos"
+              wx:for-index="i"
+              wx:key="i"
+              class="divider divider-horizontal"
+              style="top:{{pos}}%;"
+              data-type="row"
+              data-index="{{i}}"
+              catchtouchstart="onDividerTouchStart"
+              catchtouchmove="onDividerTouchMove"
+              catchtouchend="onDividerTouchEnd"
+              catchtouchcancel="onDividerTouchEnd"
+            ></view>
+          </block>
         </view>
       </view>
     </view>

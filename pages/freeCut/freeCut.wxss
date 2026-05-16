@@ -89,15 +89,22 @@ page {
 
 .grid-overlay {
   position: absolute;
-  display: grid;
   box-sizing: border-box;
   pointer-events: none;
   overflow: hidden;
 }
 
-/* 固定模式下的完整实线外框 */
-.grid-overlay.fixed {
-  border: 2rpx solid #000;
+.grid-frame {
+  position: absolute;
+  display: grid;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* 固定模式下的完整实线外框（提示可拖动的整体边界） */
+.grid-frame.fixed {
+  outline: 2rpx solid rgba(255, 255, 255, 0.7);
+  outline-offset: -1rpx;
 }
 
 .preview-placeholder {
@@ -118,8 +125,51 @@ page {
 
 
 
-.grid-overlay .grid-cell {
+.grid-frame .grid-cell {
   pointer-events: auto;
+}
+
+/* 自由模式：分割线热区与视觉指示 */
+.divider {
+  position: absolute;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.divider-vertical {
+  top: 0;
+  bottom: 0;
+  width: 40rpx;
+  margin-left: -20rpx;
+}
+
+.divider-vertical::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4rpx;
+  background-color: rgba(0, 122, 255, 0.7);
+  transform: translateX(-50%);
+}
+
+.divider-horizontal {
+  left: 0;
+  right: 0;
+  height: 40rpx;
+  margin-top: -20rpx;
+}
+
+.divider-horizontal::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background-color: rgba(0, 122, 255, 0.7);
+  transform: translateY(-50%);
 }
 
 .grid-cell {
@@ -175,8 +225,8 @@ page {
   display: none;
 }
 
-.grid-overlay div.selected {
-  background-color: rgba(0,0,0,0.15);
+.grid-cell.selected {
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 .operation {

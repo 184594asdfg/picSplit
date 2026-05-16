@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/cut9/cut9",
-    "pages/freeCut/freeCut"
+    "pages/freeCut/freeCut",
+    "pages/result/result"
   ],
   "window": {
     "backgroundTextStyle": "light",
