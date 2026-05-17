@@ -19,10 +19,10 @@
           <view
             class="grid-frame {{modeType}}"
             style="{{frameStyle}}"
-            bindtouchstart="onFrameTouchStart"
-            bindtouchmove="onFrameTouchMove"
-            bindtouchend="onFrameTouchEnd"
-            bindtouchcancel="onFrameTouchEnd"
+            catchtouchstart="onFrameTouchStart"
+            catchtouchmove="onFrameTouchMove"
+            catchtouchend="onFrameTouchEnd"
+            catchtouchcancel="onFrameTouchEnd"
           >
             <view
               wx:for="{{gridCells}}"
