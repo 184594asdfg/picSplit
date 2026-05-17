@@ -59,12 +59,13 @@ const TEMPLATES = [
   { ratio: 5 / 3, layout: { dir: 'h', cells: ['_', '_'] }, count: 2 }
 ]
 
-// gap=区块间距+整体外留白间距  pad=图片内边距
+// gap=区块间距+整体外留白间距（区块之间与到 frame 边缘统一使用此值）
+// pad=图片到 cell 边缘的额外内边距，置 0 以避免与 gap 叠加导致内部间距翻倍
 const STYLE_MAP = {
   'line-none': { gap: 0, pad: 0 },
-  'line-small': { gap: 8, pad: 8 },
-  'line-medium': { gap: 16, pad: 16 },
-  'line-large': { gap: 24, pad: 24 }
+  'line-small': { gap: 8, pad: 0 },
+  'line-medium': { gap: 16, pad: 0 },
+  'line-large': { gap: 24, pad: 0 }
 }
 
 const LONG_PRESS_MS = 350

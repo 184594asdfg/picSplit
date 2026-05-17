@@ -9,7 +9,7 @@
           data-index="{{index}}"
           style="left:{{item.x}}px;top:{{item.y}}px;width:{{item.w}}px;height:{{item.h}}px;padding:{{imgPad}}px;"
           bindtouchstart="onCellTouchStart"
-          bindtouchmove="onCellTouchMove"
+          catchtouchmove="onCellTouchMove"
           bindtouchend="onCellTouchEnd"
           bindtouchcancel="onCellTouchEnd">
           <view class="cell-inner">
