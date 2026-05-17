@@ -1,6 +1,22 @@
 <view class="page-container">
   <view class="preview-area">
-    <view class="preview-black-bg"></view>
+    <view class="preview-black-bg">
+      <view class="puzzle-frame" style="width:{{frameW}}px;height:{{frameH}}px;">
+        <view
+          class="puzzle-cell"
+          wx:for="{{cells}}"
+          wx:key="idx"
+          style="left:{{item.x}}px;top:{{item.y}}px;width:{{item.w}}px;height:{{item.h}}px;">
+          <image
+            wx:if="{{selectedImages[index]}}"
+            src="{{selectedImages[index]}}"
+            mode="aspectFit"
+            class="cell-img"
+          />
+        </view>
+      </view>
+    </view>
+    <canvas type="2d" id="saveCanvas" class="save-canvas"></canvas>
   </view>
 
   <view class="bottom-panel">

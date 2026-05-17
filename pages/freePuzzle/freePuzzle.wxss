@@ -18,6 +18,38 @@ page {
   height: 90%;
   background: #000;
   border-radius: 16rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.puzzle-frame {
+  position: relative;
+  background: transparent;
+}
+
+.puzzle-cell {
+  position: absolute;
+  background: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cell-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.save-canvas {
+  position: fixed;
+  left: -10000rpx;
+  top: -10000rpx;
+  width: 200rpx;
+  height: 200rpx;
+  pointer-events: none;
 }
 .bottom-panel {
   background: #fff;
