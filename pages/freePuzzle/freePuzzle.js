@@ -68,8 +68,7 @@ const STYLE_MAP = {
   'line-large': { gap: 24, pad: 0 }
 }
 
-const LONG_PRESS_MS = 350
-const MOVE_THRESHOLD = 6
+const SWAP_ANIM_MS = 320
 
 Page({
   data: {
@@ -87,6 +86,8 @@ Page({
     currentCount: 2,
     imgPad: 0,
     draggingIdx: -1,
+    hoverIdx: -1,
+    swapAnimMap: {},
     floatX: 0,
     floatY: 0,
     floatW: 0,
@@ -272,12 +273,19 @@ Page({
     const t = e.touches[0]
     const img = this.data.cellImages[idx]
     if (!img || !img.src) return
-    this._touch = { idx, startX: t.clientX, startY: t.clientY, startOX: img.offsetX, startOY: img.offsetY, moved: false }
-    this._lpTimer = setTimeout(() => {
-      if (!this._touch.moved) {
-        this.setData({ draggingIdx: idx, floatX: t.clientX, floatY: t.clientY, floatW: this.data.cells[idx].w, floatH: this.data.cells[idx].h })
-      }
-    }, LONG_PRESS_MS)
+    const cell = this.data.cells[idx]
+    this._touch = {
+      idx,
+      startX: t.clientX,
+      startY: t.clientY,
+      startOX: img.offsetX,
+      startOY: img.offsetY,
+      cellX: cell.x,
+      cellY: cell.y,
+      cellW: cell.w,
+      cellH: cell.h
+    }
+    this.refreshFrameRect()
   },
 
   onCellTouchMove(e) {
@@ -285,47 +293,94 @@ Page({
     const t = e.touches[0]
     const dx = t.clientX - this._touch.startX
     const dy = t.clientY - this._touch.startY
-    if (!this._touch.moved && (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD)) {
-      this._touch.moved = true
-      clearTimeout(this._lpTimer)
-    }
-    if (this.data.draggingIdx >= 0) {
-      this.setData({ floatX: t.clientX, floatY: t.clientY })
-    } else if (this._touch.moved) {
-      const idx = this._touch.idx
-      const cell = this.data.cells[idx]
-      const img = this.data.cellImages[idx]
-      const pad = this.data.imgPad
-      const cw = cell.w - 2 * pad
-      const ch = cell.h - 2 * pad
-      const nx = this.clampOffset(this._touch.startOX + dx, img.dispW, cw)
-      const ny = this.clampOffset(this._touch.startOY + dy, img.dispH, ch)
-      const arr = [...this.data.cellImages]
-      arr[idx] = { ...arr[idx], offsetX: nx, offsetY: ny }
-      this.setData({ cellImages: arr })
+    const fl = this._frameLeft || 0
+    const ft = this._frameTop || 0
+    const fx = t.clientX - fl
+    const fy = t.clientY - ft
+
+    if (this.data.draggingIdx < 0) {
+      const inCell = fx >= this._touch.cellX && fx <= this._touch.cellX + this._touch.cellW
+        && fy >= this._touch.cellY && fy <= this._touch.cellY + this._touch.cellH
+      if (inCell) {
+        const idx = this._touch.idx
+        const cell = this.data.cells[idx]
+        const img = this.data.cellImages[idx]
+        const pad = this.data.imgPad
+        const cw = cell.w - 2 * pad
+        const ch = cell.h - 2 * pad
+        const nx = this.clampOffset(this._touch.startOX + dx, img.dispW, cw)
+        const ny = this.clampOffset(this._touch.startOY + dy, img.dispH, ch)
+        const arr = [...this.data.cellImages]
+        arr[idx] = { ...arr[idx], offsetX: nx, offsetY: ny }
+        this.setData({ cellImages: arr })
+      } else {
+        const w = this._touch.cellW
+        const h = this._touch.cellH
+        this.setData({
+          draggingIdx: this._touch.idx,
+          floatW: w,
+          floatH: h,
+          floatX: t.clientX - w / 2,
+          floatY: t.clientY - h / 2,
+          hoverIdx: -1
+        })
+      }
+    } else {
+      let hover = -1
+      const cells = this.data.cells
+      for (let i = 0; i < cells.length; i++) {
+        if (i === this.data.draggingIdx) continue
+        const c = cells[i]
+        if (fx >= c.x && fx <= c.x + c.w && fy >= c.y && fy <= c.y + c.h) {
+          const ci = this.data.cellImages[i]
+          if (ci && ci.src) hover = i
+          break
+        }
+      }
+      const update = {
+        floatX: t.clientX - this.data.floatW / 2,
+        floatY: t.clientY - this.data.floatH / 2
+      }
+      if (hover !== this.data.hoverIdx) update.hoverIdx = hover
+      this.setData(update)
     }
   },
 
-  onCellTouchEnd(e) {
-    clearTimeout(this._lpTimer)
+  onCellTouchEnd() {
+    if (!this._touch) return
     if (this.data.draggingIdx >= 0) {
-      const t = e.changedTouches[0]
-      const fl = this._frameLeft || 0
-      const ft = this._frameTop || 0
-      const x = t.clientX - fl
-      const y = t.clientY - ft
-      let target = -1
-      this.data.cells.forEach((c, i) => {
-        if (x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) target = i
-      })
-      if (target >= 0 && target !== this.data.draggingIdx) {
-        const arr = [...this.data.cellImages]
-        [arr[this.data.draggingIdx], arr[target]] = [arr[target], arr[this.data.draggingIdx]]
-        this.setData({ cellImages: arr })
+      const source = this.data.draggingIdx
+      const target = this.data.hoverIdx
+      if (target >= 0 && target !== source) {
+        this.performSwap(source, target)
+      } else {
+        this.setData({ draggingIdx: -1, hoverIdx: -1 })
       }
-      this.setData({ draggingIdx: -1 })
     }
     this._touch = null
+  },
+
+  performSwap(source, target) {
+    const cells = this.data.cells
+    const pad = this.data.imgPad
+    const arr = [...this.data.cellImages]
+    const a = arr[source]
+    const b = arr[target]
+    arr[source] = this.fitImageToCell(b.src, { width: b.naturalW, height: b.naturalH }, cells[source], pad)
+    arr[target] = this.fitImageToCell(a.src, { width: a.naturalW, height: a.naturalH }, cells[target], pad)
+    const swapAnimMap = {}
+    swapAnimMap[source] = true
+    swapAnimMap[target] = true
+    this.setData({
+      cellImages: arr,
+      draggingIdx: -1,
+      hoverIdx: -1,
+      swapAnimMap
+    })
+    if (this._swapTimer) clearTimeout(this._swapTimer)
+    this._swapTimer = setTimeout(() => {
+      this.setData({ swapAnimMap: {} })
+    }, SWAP_ANIM_MS)
   },
 
   handleSaveImage() {

@@ -3,7 +3,7 @@
     <view class="preview-stage">
       <view class="puzzle-frame" style="width:{{frameW}}px;height:{{frameH}}px;">
         <view
-          class="puzzle-cell {{cellImages[index].src && draggingIdx !== index ? 'has-img' : ''}}"
+          class="puzzle-cell {{cellImages[index].src ? 'has-img' : ''}} {{hoverIdx === index ? 'hover-target' : ''}} {{swapAnimMap[index] ? 'swap-anim' : ''}} {{draggingIdx === index ? 'is-dragging' : ''}}"
           wx:for="{{cells}}"
           wx:key="idx"
           data-index="{{index}}"
@@ -14,7 +14,7 @@
           bindtouchcancel="onCellTouchEnd">
           <view class="cell-inner">
             <image
-              wx:if="{{cellImages[index].src && draggingIdx !== index}}"
+              wx:if="{{cellImages[index].src}}"
               class="cell-img"
               src="{{cellImages[index].src}}"
               mode="scaleToFill"

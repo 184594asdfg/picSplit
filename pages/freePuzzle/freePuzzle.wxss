@@ -32,10 +32,35 @@ page {
   background: #000;
   box-sizing: border-box;
   overflow: hidden;
-  
+  transition: box-shadow 0.15s ease;
 }
 .puzzle-cell.has-img {
   background: transparent;
+}
+.puzzle-cell.hover-target {
+  z-index: 2;
+}
+.puzzle-cell.hover-target::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border: 6rpx solid #ff3b30;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 10;
+}
+.puzzle-cell.is-dragging .cell-img {
+  opacity: 0.4;
+}
+.puzzle-cell.swap-anim .cell-img {
+  animation: swap-fade 0.32s ease;
+}
+@keyframes swap-fade {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
 }
 .cell-inner {
   position: relative;
@@ -49,8 +74,13 @@ page {
 .drag-floating {
   position: fixed;
   z-index: 999;
-  opacity: 0.85;
+  opacity: 0.9;
   pointer-events: none;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.25);
+  border-radius: 6rpx;
+  overflow: hidden;
+  transform: scale(0.92);
+  transition: transform 0.12s ease;
 }
 .save-canvas {
   position: fixed;
