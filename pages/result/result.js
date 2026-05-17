@@ -3,9 +3,15 @@ Page({
     previewList: [],
     statusBarHeight: 0,
     navBarHeight: 0,
-    // 'grid' = 来自九宫格切图（一行 3 个）；其他来源默认一行 4 个
+    // 'grid' = 来自九宫格切图（一行 3 个）；'free' = 自由切图（一行 4 个）；'puzzle' = 自由拼图（单图）
     source: '',
-    gridColumns: 4
+    gridColumns: 4,
+    // 预览区标题：拼图来源显示「拼图效果图」，其余显示「下载顺序」
+    previewTitle: '下载顺序',
+    // 三个继续操作按钮的文案，根据 source 动态加上「继续」前缀
+    gridLabel: '九宫格',
+    collageLabel: '自由切图',
+    puzzleLabel: '自由拼图'
   },
 
   onLoad(options) {
@@ -19,9 +25,19 @@ Page({
     let gridColumns = 4
     if (source === 'grid') gridColumns = 3
     else if (source === 'puzzle') gridColumns = 1
+
+    const previewTitle = source === 'puzzle' ? '拼图效果图' : '下载顺序'
+    const gridLabel = source === 'grid' ? '继续九宫格' : '九宫格'
+    const collageLabel = source === 'free' ? '继续自由切图' : '自由切图'
+    const puzzleLabel = source === 'puzzle' ? '继续自由拼图' : '自由拼图'
+
     this.setData({
       source,
-      gridColumns
+      gridColumns,
+      previewTitle,
+      gridLabel,
+      collageLabel,
+      puzzleLabel
     })
 
     if (options.images) {
@@ -51,6 +67,9 @@ Page({
         break
       case 'collage':
         this.chooseImageForFreeCut()
+        break
+      case 'puzzle':
+        wx.redirectTo({ url: '/pages/freePuzzle/freePuzzle' })
         break
     }
   },

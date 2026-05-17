@@ -388,7 +388,7 @@ Page({
       wx.hideLoading()
       setTimeout(() => {
         wx.redirectTo({
-          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
+          url: `/pages/result/result?source=free&images=${encodeURIComponent(JSON.stringify(previewList))}`
         })
       }, 300)
     } catch (err) {

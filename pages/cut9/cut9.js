@@ -147,9 +147,9 @@ Page({
 
       setTimeout(() => {
         wx.redirectTo({
-          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
+          url: `/pages/result/result?source=grid&images=${encodeURIComponent(JSON.stringify(previewList))}`
         });
-      }, 1000);
+      }, 300);
     } catch (e) {
       wx.hideLoading();
       const msg = (e && e.errMsg) || (e && e.message) || '保存失败';
