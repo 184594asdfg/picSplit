@@ -48,13 +48,39 @@ page {
 }
 .template-list {
   display: flex;
-  gap: 70rpx;
   align-items: center;
 }
+
+.left-template {
+  display: flex;
+  align-items: center;
+  margin-right: 20rpx;
+}
+
+.split-line {
+  width: 2rpx;
+  height: 70rpx;
+  background: #ccc !important;
+  margin-left: 20rpx;
+  display: block;
+}
+
 .template-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 25rpx;
+}
+
+.small-box {
+  width: 60rpx !important;
+  height: 60rpx !important;
+}
+
+.item-text {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
 }
 
 .ratio-4-5 { width: 80rpx; height: 100rpx; }
@@ -98,21 +124,34 @@ page {
 .f2-v { left: 50%; }
 .f3-v { left: 75%; }
 
-.line-slash {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg,transparent 47%,#ccc 48%,#ccc 52%,transparent 53%);
-}
-
 .template-item.active .box{
   border-color: #ff5e78;
   background: #ffeef0;
 }
 .template-item.active .line-h,
-.template-item.active .line-v,
-.template-item.active .line-slash {
+.template-item.active .line-v {
   background: #fff;
 }
+
+/* 左侧图标 + 字母居中 */
+/* 左侧四种图标样式 —— 边框粗细完全统一 */
+.left-icon-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #666;
+}
+/* 统一边框：全部 2rpx solid #ccc，和无边框标准一样 */
+.line-none {
+  background: linear-gradient(135deg, transparent 48%, #ccc 48%, #ccc 52%, transparent 52%);
+  border: none;
+}
+
 
 .action-buttons {
   display: flex;

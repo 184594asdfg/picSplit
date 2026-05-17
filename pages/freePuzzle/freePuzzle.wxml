@@ -13,124 +13,74 @@
       <scroll-view class="template-scroll" scroll-x="true" show-scrollbar="false">
         <view class="template-list">
 
-          <!-- 0 无边框 -->
-          <view class="template-item {{currentTemplate==0?'active':''}}" data-index="0" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-slash"></view>
+          <!-- 左侧单图模块 -->
+          <view class="left-template">
+            <view class="template-item" bindtap="onLeftIconChange">
+              <view class="box small-box">
+                <view class="left-icon-inner {{leftBorderType}}">
+                  {{leftLetter}}
+                </view>
+              </view>
+              <text class="item-text">{{leftText}}</text>
             </view>
+            <view class="split-line"></view>
           </view>
 
-          <!-- 1 2行1列 -->
+          <!-- 右侧模板原样不动 -->
           <view class="template-item {{currentTemplate==1?'active':''}}" data-index="1" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h mid-h"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h mid-h"></view></view>
           </view>
 
-          <!-- 2 1行2列 竖框 -->
           <view class="template-item {{currentTemplate==2?'active':''}}" data-index="2" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-v mid-v"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-v mid-v"></view></view>
           </view>
 
-          <!-- 3 3行1列 -->
           <view class="template-item {{currentTemplate==3?'active':''}}" data-index="3" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h one-h"></view>
-              <view class="line-h two-h"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view></view>
           </view>
 
-          <!-- 4 四宫格 -->
           <view class="template-item {{currentTemplate==4?'active':''}}" data-index="4" bindtap="handleTemplateChange">
-            <view class="box ratio-1-1">
-              <view class="line-h mid-h"></view>
-              <view class="line-v mid-v"></view>
-            </view>
+            <view class="box ratio-1-1"><view class="line-h mid-h"></view><view class="line-v mid-v"></view></view>
           </view>
 
-          <!-- 5 3行2列 -->
           <view class="template-item {{currentTemplate==5?'active':''}}" data-index="5" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h one-h"></view>
-              <view class="line-h two-h"></view>
-              <view class="line-v mid-v"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view><view class="line-v mid-v"></view></view>
           </view>
 
-          <!-- 6 九宫格 -->
           <view class="template-item {{currentTemplate==6?'active':''}}" data-index="6" bindtap="handleTemplateChange">
-            <view class="box ratio-1-1">
-              <view class="line-h one-h"></view>
-              <view class="line-h two-h"></view>
-              <view class="line-v one-v"></view>
-              <view class="line-v two-v"></view>
-            </view>
+            <view class="box ratio-1-1"><view class="line-h one-h"></view><view class="line-h two-h"></view><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
 
-          <!-- 7 1行2列 横版 -->
           <view class="template-item {{currentTemplate==7?'active':''}}" data-index="7" bindtap="handleTemplateChange">
-            <view class="box ratio-5-3">
-              <view class="line-v mid-v"></view>
-            </view>
+            <view class="box ratio-5-3"><view class="line-v mid-v"></view></view>
           </view>
 
-          <!-- 8 1行3列 横版 -->
           <view class="template-item {{currentTemplate==8?'active':''}}" data-index="8" bindtap="handleTemplateChange">
-            <view class="box ratio-5-3">
-              <view class="line-v one-v"></view>
-              <view class="line-v two-v"></view>
-            </view>
+            <view class="box ratio-5-3"><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
 
-          <!-- 9 1行4列 横版 -->
           <view class="template-item {{currentTemplate==9?'active':''}}" data-index="9" bindtap="handleTemplateChange">
-            <view class="box ratio-2-1">
-              <view class="line-v f1-v"></view>
-              <view class="line-v f2-v"></view>
-              <view class="line-v f3-v"></view>
-            </view>
+            <view class="box ratio-2-1"><view class="line-v f1-v"></view><view class="line-v f2-v"></view><view class="line-v f3-v"></view></view>
           </view>
 
-          <!-- 10 2行3列 横版 -->
           <view class="template-item {{currentTemplate==10?'active':''}}" data-index="10" bindtap="handleTemplateChange">
-            <view class="box ratio-5-3">
-              <view class="line-h mid-h"></view>
-              <view class="line-v one-v"></view>
-              <view class="line-v two-v"></view>
-            </view>
+            <view class="box ratio-5-3"><view class="line-h mid-h"></view><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
 
-          <!-- 11 新增：2格竖版 -->
           <view class="template-item {{currentTemplate==11?'active':''}}" data-index="11" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h mid-h"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h mid-h"></view></view>
           </view>
 
-          <!-- 12 新增：3格竖版 -->
           <view class="template-item {{currentTemplate==12?'active':''}}" data-index="12" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h one-h"></view>
-              <view class="line-h two-h"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view></view>
           </view>
 
-          <!-- 13 新增：4格竖版 -->
           <view class="template-item {{currentTemplate==13?'active':''}}" data-index="13" bindtap="handleTemplateChange">
-            <view class="box ratio-4-5">
-              <view class="line-h q1"></view>
-              <view class="line-h q2"></view>
-              <view class="line-h q3"></view>
-            </view>
+            <view class="box ratio-4-5"><view class="line-h q1"></view><view class="line-h q2"></view><view class="line-h q3"></view></view>
           </view>
 
-          <!-- 14 新增：2格横版 -->
           <view class="template-item {{currentTemplate==14?'active':''}}" data-index="14" bindtap="handleTemplateChange">
-            <view class="box ratio-5-3">
-              <view class="line-v mid-v"></view>
-            </view>
+            <view class="box ratio-5-3"><view class="line-v mid-v"></view></view>
           </view>
 
         </view>
