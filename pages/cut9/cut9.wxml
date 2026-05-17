@@ -1,7 +1,7 @@
 <view class="container">
   <view class="main-content">
     <view class="grid-container">
-      <view class="preview-area">
+      <view class="preview-area" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd">
         <image
           class="preview-image upload-image"
           wx:if="{{selectedImage}}"
@@ -36,6 +36,5 @@
       </view>
     </view>
   </view>
-
-  <canvas type="2d" id="cutCanvas" class="cut-canvas"></canvas>
+    <canvas type="2d" id="cutCanvas" class="cut-canvas"></canvas>
 </view>

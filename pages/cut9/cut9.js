@@ -2,17 +2,6 @@ Page({
   data: {
     shapes: [
       { id: 1, icon: '/images/masks/square.png' },
-      { id: 2, icon: '/images/masks/circle.png' },
-      { id: 3, icon: '/images/masks/heart.png' },
-      { id: 4, icon: '/images/masks/star_mask.png' },
-      { id: 5, icon: '/images/masks/flower.png' },
-      { id: 6, icon: '/images/masks/cloud.png' },
-      { id: 7, icon: '/images/masks/clover.png' },
-      { id: 8, icon: '/images/masks/leaf_mask.png' },
-      { id: 9, icon: '/images/masks/blob_mask.png' },
-      { id: 10, icon: '/images/masks/burst_mask.png' },
-      { id: 11, icon: '/images/masks/hex_mask.png' },
-      { id: 12, icon: '/images/masks/spike_mask.png' },
     ],
     selectedShape: 1,
     selectedImage: null,
@@ -25,7 +14,10 @@ Page({
     imgX: 0,
     imgY: 0,
     originalW: 0,
-    originalH: 0
+    originalH: 0,
+    startX: 0,
+    startY: 0,
+    isDragging: false
   },
 
   onLoad() {
@@ -59,7 +51,7 @@ Page({
     const pw = this.data.preW;
     const ph = this.data.preH;
     if (!pw || !ph || !iw || !ih) return;
-    const scale = Math.min(pw / iw, ph / ih);
+    const scale = Math.max(pw / iw, ph / ih);
     const showW = iw * scale;
     const showH = ih * scale;
     this.setData({
@@ -106,58 +98,67 @@ Page({
 
     try {
       await this.ensureAlbumAuth();
-      const src = this.data.selectedImage;
-
-      const realInfo = await this.getImageInfoSafe(src);
-      const originalW = realInfo.width;
-      const originalH = realInfo.height;
-
-      const partW = Math.floor(originalW / 3);
-      const partH = Math.floor(originalH / 3);
-
-      const points = [
-        { x: 0, y: 0 },
-        { x: partW, y: 0 },
-        { x: partW * 2, y: 0 },
-        { x: 0, y: partH },
-        { x: partW, y: partH },
-        { x: partW * 2, y: partH },
-        { x: 0, y: partH * 2 },
-        { x: partW, y: partH * 2 },
-        { x: partW * 2, y: partH * 2 }
-      ];
-
+      const cropInfo = await this.computeCropInfo();
       const previewList = [];
+      const total = 9;
 
-      for (let i = 0; i < 9; i++) {
-        wx.showLoading({ title: `保存中 ${i + 1}/9`, mask: true });
-        const p = points[i];
-        const path = await this.cropImage(src, p.x, p.y, partW, partH);
-        await this.saveImg(path);
-        previewList.push(path);
-      }
-
-      // 保存原图与图案结合的完整图
-      const combinedPath = await this.createCombinedImage(src, originalW, originalH);
-      if (combinedPath) {
-        await this.saveImg(combinedPath);
-        //previewList.push(combinedPath);
+      const pieceW = cropInfo.sw / 3;
+      const pieceH = cropInfo.sh / 3;
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          const index = row * 3 + col;
+          wx.showLoading({ title: `保存中 ${index + 1}/${total}`, mask: true });
+          const px = cropInfo.sx + col * pieceW;
+          const py = cropInfo.sy + row * pieceH;
+          const piecePath = await this.cropImage(cropInfo.src, px, py, pieceW, pieceH);
+          await this.saveImg(piecePath);
+          previewList.push(piecePath);
+        }
       }
 
       wx.hideLoading();
+      wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 });
+
       setTimeout(() => {
         wx.redirectTo({
-          url: `/pages/result/result?source=grid&images=${encodeURIComponent(JSON.stringify(previewList))}`
+          url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
         });
-      }, 100);
-
+      }, 1000);
     } catch (e) {
       wx.hideLoading();
-      console.error(e);
-      wx.showToast({ title: '保存失败', icon: 'none' });
+      const msg = (e && e.errMsg) || (e && e.message) || '保存失败';
+      if (msg.indexOf('cancel') === -1 && msg.indexOf('取消') === -1) {
+        wx.showToast({ title: msg, icon: 'none' });
+      }
     } finally {
       this._saving = false;
     }
+  },
+
+  computeCropInfo() {
+    return new Promise((resolve, reject) => {
+      const { selectedImage, imgX, imgY, imgW, imgH, preW, preH } = this.data;
+      wx.getImageInfo({
+        src: selectedImage,
+        success: (info) => {
+          const scale = imgW / info.width;
+          const sx = Math.max(0, -imgX / scale);
+          const sy = Math.max(0, -imgY / scale);
+          const sw = Math.min(info.width - sx, preW / scale);
+          const sh = Math.min(info.height - sy, preH / scale);
+          resolve({
+            src: info.path || selectedImage,
+            sx,
+            sy,
+            sw,
+            sh,
+            originalW: info.width,
+            originalH: info.height
+          });
+        },
+        fail: () => reject(new Error('读取图片信息失败'))
+      });
+    });
   },
 
   getImageInfoSafe(src) {
@@ -167,24 +168,42 @@ Page({
   },
 
   ensureAlbumAuth() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       wx.getSetting({
         success: (res) => {
           const auth = res.authSetting['scope.writePhotosAlbum'];
-          if (auth === true) resolve();
-          else if (auth === false) {
+          if (auth === true) {
+            resolve();
+          } else if (auth === false) {
             wx.showModal({
-              title: '提示', content: '需要保存相册权限',
-              success: () => resolve()
+              title: '保存提示',
+              content: '需要授权保存图片到相册，是否前往设置？',
+              success: (modalRes) => {
+                if (!modalRes.confirm) {
+                  reject(new Error('用户取消授权'));
+                  return;
+                }
+                wx.openSetting({
+                  success: (setRes) => {
+                    if (setRes.authSetting['scope.writePhotosAlbum']) {
+                      resolve();
+                    } else {
+                      reject(new Error('未授权保存到相册'));
+                    }
+                  },
+                  fail: () => reject(new Error('打开设置失败'))
+                });
+              }
             });
           } else {
             wx.authorize({
               scope: 'scope.writePhotosAlbum',
-              success: resolve, fail: resolve
+              success: resolve,
+              fail: () => reject(new Error('未授权保存到相册'))
             });
           }
         },
-        fail: () => resolve()
+        fail: () => reject(new Error('获取授权信息失败'))
       });
     });
   },
@@ -213,55 +232,53 @@ Page({
     });
   },
 
-  createCombinedImage(src, w, h) {
-    return new Promise((resolve) => {
-      const shapeIcon = this.data.currentShapeIcon;
-      if (!shapeIcon) {
-        resolve(null);
-        return;
-      }
-
-      const query = wx.createSelectorQuery().in(this);
-      query.select('#cutCanvas').fields({ node: true, size: true }).exec(res => {
-        if (!res[0]?.node) {
-          resolve(null);
-          return;
-        }
-        const canvas = res[0].node;
-        const ctx = canvas.getContext('2d');
-        canvas.width = w;
-        canvas.height = h;
-
-        const img = canvas.createImage();
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, w, h);
-
-          const mask = canvas.createImage();
-          mask.onload = () => {
-            ctx.globalCompositeOperation = 'destination-in';
-            ctx.drawImage(mask, 0, 0, w, h);
-            ctx.globalCompositeOperation = 'source-over';
-
-            wx.canvasToTempFilePath({
-              canvas, quality: 1, fileType: 'png',
-              success: (r) => resolve(r.tempFilePath),
-              fail: () => resolve(null)
-            });
-          };
-          mask.onerror = () => resolve(null);
-          mask.src = shapeIcon;
-        };
-        img.onerror = () => resolve(null);
-        img.src = src;
-      });
-    });
-  },
-
   saveImg(filePath) {
     return new Promise((resolve) => {
       wx.saveImageToPhotosAlbum({
         filePath, success: resolve, fail: resolve
       });
     });
+  },
+
+  touchStart(e) {
+    if (!this.data.selectedImage) return;
+    this.setData({
+      startX: e.touches[0].clientX,
+      startY: e.touches[0].clientY,
+      isDragging: true
+    });
+  },
+
+  touchMove(e) {
+    if (!this.data.isDragging || !this.data.selectedImage) return;
+
+    const dx = e.touches[0].clientX - this.data.startX;
+    const dy = e.touches[0].clientY - this.data.startY;
+
+    let newX = this.data.imgX + dx;
+    let newY = this.data.imgY + dy;
+
+    const { preW, preH, imgW, imgH } = this.data;
+
+    const minX = preW - imgW;
+    const maxX = 0;
+    const minY = preH - imgH;
+    const maxY = 0;
+
+    newX = Math.max(minX, Math.min(maxX, newX));
+    newY = Math.max(minY, Math.min(maxY, newY));
+
+    this.setData({
+      imgX: newX,
+      imgY: newY,
+      startX: e.touches[0].clientX,
+      startY: e.touches[0].clientY
+    });
+    
+    return false;
+  },
+
+  touchEnd() {
+    this.setData({ isDragging: false });
   }
 });
