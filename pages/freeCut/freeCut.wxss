@@ -102,10 +102,43 @@ page {
   pointer-events: auto;
 }
 
-/* 固定模式下的完整实线外框（提示可拖动的整体边界） */
+/* 固定模式下的整体外框：取景框风格 —— 连续白色细边框（可清晰看到范围）
+   + 四角粗白 L 形角标（强调可拖动边界），与内部短划虚线分割线明显区分 */
 .grid-frame.fixed {
-  outline: 2rpx solid rgba(255, 255, 255, 0.7);
-  outline-offset: -1rpx;
+  outline: 2rpx solid rgba(255, 255, 255, 0.9);
+  outline-offset: 0;
+  box-shadow: 0 0 0 1rpx rgba(0, 0, 0, 0.35);
+}
+
+.grid-frame.fixed::before {
+  content: '';
+  position: absolute;
+  left: -3rpx;
+  right: -3rpx;
+  top: -3rpx;
+  bottom: -3rpx;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff),
+    linear-gradient(#fff, #fff);
+  background-position:
+    left top, left top,
+    right top, right top,
+    left bottom, left bottom,
+    right bottom, right bottom;
+  background-size:
+    36rpx 6rpx, 6rpx 36rpx,
+    36rpx 6rpx, 6rpx 36rpx,
+    36rpx 6rpx, 6rpx 36rpx,
+    36rpx 6rpx, 6rpx 36rpx;
+  background-repeat: no-repeat;
+  z-index: 10;
 }
 
 .preview-placeholder {
@@ -179,22 +212,23 @@ page {
   position: relative;
 }
 
-/* 使用linear-gradient绘制等距黑方块+白方块 - 参考test2.html */
+/* 预览区内部分割线：细的黑白短划虚线（"行进的蚂蚁"），
+   保证不同底色都清晰可见，且与外框取景框样式明显区分 */
 .grid-cell::before {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4rpx;
+  height: 2rpx;
   background-image: linear-gradient(
     to right,
-    #000 0px,
-    #000 8rpx,
-    #fff 8rpx,
-    #fff 16rpx
+    rgba(0, 0, 0, 0.55) 0,
+    rgba(0, 0, 0, 0.55) 6rpx,
+    rgba(255, 255, 255, 0.9) 6rpx,
+    rgba(255, 255, 255, 0.9) 12rpx
   );
-  background-size: 16rpx 100%;
+  background-size: 12rpx 100%;
   background-repeat: repeat-x;
 }
 
@@ -204,15 +238,15 @@ page {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 4rpx;
+  width: 2rpx;
   background-image: linear-gradient(
     to bottom,
-    #000 0px,
-    #000 8rpx,
-    #fff 8rpx,
-    #fff 16rpx
+    rgba(0, 0, 0, 0.55) 0,
+    rgba(0, 0, 0, 0.55) 6rpx,
+    rgba(255, 255, 255, 0.9) 6rpx,
+    rgba(255, 255, 255, 0.9) 12rpx
   );
-  background-size: 100% 16rpx;
+  background-size: 100% 12rpx;
   background-repeat: repeat-y;
 }
 

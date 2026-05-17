@@ -386,12 +386,11 @@ Page({
       await this.saveToAlbum(completePath)
       previewList.push(completePath)
       wx.hideLoading()
-      wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 })
       setTimeout(() => {
         wx.redirectTo({
           url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
         })
-      }, 1000)
+      }, 300)
     } catch (err) {
       wx.hideLoading()
     }
@@ -442,7 +441,7 @@ Page({
     return rects
   },
 
-  // 绘制完整图：只截取框选区域 + 保留原生黑白虚线分割线，无额外红边框
+  // 绘制完整图：内部分割线 + 固定模式外框（取景框风格），与 UI 最新样式一致
   renderCompleteImage() {
     return new Promise((resolve, reject) => {
       const { modeType, gridCols, gridRows, imgWidth, imgHeight, fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY, colFractions, rowFractions } = this.data
@@ -461,58 +460,50 @@ Page({
           const cutW = fixedGridW * scaleW
           const cutH = fixedGridH * scaleH
 
-          // 画布设为框选区域大小
           canvas.width = cutW
           canvas.height = cutH
 
           const img = canvas.createImage()
           img.onload = () => {
-            // 截取框内图片
             ctx.drawImage(img, cutX, cutY, cutW, cutH, 0, 0, cutW, cutH)
-            // 绘制和界面一致的黑白交替虚线分割线
+
             const cellW = cutW / gridCols
             const cellH = cutH / gridRows
-            const lineW = Math.max(2, Math.round(Math.min(cutW, cutH) * 0.005))
+            const dividerW = Math.max(2, Math.round(Math.min(cutW, cutH) * 0.003))
 
-            // 竖线
             for (let i = 1; i < gridCols; i++) {
-              let lx = i * cellW
-              this.drawAlternatingLine(ctx, lx, 0, lx, cutH, lineW)
+              const lx = i * cellW
+              this.drawAlternatingLine(ctx, lx, 0, lx, cutH, dividerW)
             }
-            // 横线
             for (let i = 1; i < gridRows; i++) {
-              let ly = i * cellH
-              this.drawAlternatingLine(ctx, 0, ly, cutW, ly, lineW)
+              const ly = i * cellH
+              this.drawAlternatingLine(ctx, 0, ly, cutW, ly, dividerW)
             }
-            // 外框虚线
-            this.drawAlternatingLine(ctx, 0, 0, cutW, 0, lineW)
-            this.drawAlternatingLine(ctx, 0, cutH, cutW, cutH, lineW)
-            this.drawAlternatingLine(ctx, 0, 0, 0, cutH, lineW)
-            this.drawAlternatingLine(ctx, cutW, 0, cutW, cutH, lineW)
+
+            this.drawFrameViewfinder(ctx, cutW, cutH)
 
             wx.canvasToTempFilePath({ canvas, success: r => resolve(r.tempFilePath) })
           }
           img.src = this.data.selectedImage
         } else {
-          // 自由模式原样
           canvas.width = imgWidth
           canvas.height = imgHeight
           const img = canvas.createImage()
           img.onload = () => {
             ctx.clearRect(0, 0, imgWidth, imgHeight)
             ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
-            const lineWidth = Math.max(2, Math.round(Math.min(imgWidth, imgHeight) * 0.005))
+            const dividerW = Math.max(2, Math.round(Math.min(imgWidth, imgHeight) * 0.003))
             let cumX = 0
             for (let i = 0; i < gridCols - 1; i++) {
               cumX += colFractions[i]
               const x = cumX * imgWidth
-              this.drawAlternatingLine(ctx, x, 0, x, imgHeight, lineWidth)
+              this.drawAlternatingLine(ctx, x, 0, x, imgHeight, dividerW)
             }
             let cumY = 0
             for (let i = 0; i < gridRows - 1; i++) {
               cumY += rowFractions[i]
               const y = cumY * imgHeight
-              this.drawAlternatingLine(ctx, 0, y, imgWidth, y, lineWidth)
+              this.drawAlternatingLine(ctx, 0, y, imgWidth, y, dividerW)
             }
             wx.canvasToTempFilePath({ canvas, success: r => resolve(r.tempFilePath) })
           }
@@ -522,15 +513,16 @@ Page({
     })
   },
 
-  // 黑白相间虚线绘制方法（和界面预览一致）
+  // 内部分割线：精致的黑白短划虚线（与 UI grid-cell::before/::after 一致）
+  // 黑 0.55 透明 + 白 0.9 透明，色块 ≈ lineWidth*3，看起来更紧凑
   drawAlternatingLine(ctx, x1, y1, x2, y2, lineWidth) {
-    const dash = Math.max(4, lineWidth * 4)
+    const dash = Math.max(3, lineWidth * 3)
     ctx.save()
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'butt'
     ctx.setLineDash([dash, dash])
     ctx.lineDashOffset = 0
-    ctx.strokeStyle = '#000000'
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)'
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)
@@ -538,11 +530,49 @@ Page({
 
     ctx.setLineDash([dash, dash])
     ctx.lineDashOffset = -dash
-    ctx.strokeStyle = '#ffffff'
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)
     ctx.stroke()
+    ctx.restore()
+  },
+
+  // 取景框风格的外框：
+  //   - 连续白色细线（让整个范围闭合可见）
+  //   - 紧贴白线内侧的半透明黑细线（提升白底图上的对比度，代替 UI 的外侧 box-shadow）
+  //   - 四角粗白 L 形角标（强调可拖动边界）
+  drawFrameViewfinder(ctx, w, h) {
+    const base = Math.min(w, h)
+    const outlineW = Math.max(2, Math.round(base * 0.004))
+    const shadowW = Math.max(1, Math.round(base * 0.002))
+    const cornerLen = Math.max(20, Math.round(base * 0.045))
+    const cornerW = Math.max(4, Math.round(base * 0.008))
+
+    ctx.save()
+    ctx.setLineDash([])
+    ctx.lineCap = 'butt'
+
+    const whiteInset = outlineW / 2
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+    ctx.lineWidth = outlineW
+    ctx.strokeRect(whiteInset, whiteInset, w - outlineW, h - outlineW)
+
+    const shadowInset = outlineW + shadowW / 2
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)'
+    ctx.lineWidth = shadowW
+    ctx.strokeRect(shadowInset, shadowInset, w - shadowInset * 2, h - shadowInset * 2)
+
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, cornerLen, cornerW)
+    ctx.fillRect(0, 0, cornerW, cornerLen)
+    ctx.fillRect(w - cornerLen, 0, cornerLen, cornerW)
+    ctx.fillRect(w - cornerW, 0, cornerW, cornerLen)
+    ctx.fillRect(0, h - cornerW, cornerLen, cornerW)
+    ctx.fillRect(0, h - cornerLen, cornerW, cornerLen)
+    ctx.fillRect(w - cornerLen, h - cornerW, cornerLen, cornerW)
+    ctx.fillRect(w - cornerW, h - cornerLen, cornerW, cornerLen)
+
     ctx.restore()
   },
 
