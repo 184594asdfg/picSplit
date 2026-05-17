@@ -96,7 +96,6 @@ Page({
               originalH: info.height
             });
             this.applyDisplay(info.width, info.height);
-            wx.showToast({ title: '图片已选择', icon: 'success' });
           },
           fail: () => {
             wx.showToast({ title: '读取图片失败', icon: 'none' });
@@ -106,6 +105,9 @@ Page({
     });
   },
 
+  // ==============================================
+  // 核心：保存 9宫格 + 保存 1张完整效果图
+  // ==============================================
   async onSaveImage() {
     if (!this.data.selectedImage) {
       wx.showToast({ title: '请先选择图片', icon: 'none' });
@@ -120,6 +122,7 @@ Page({
       const previewList = [];
       const total = 9;
 
+      // 1. 保存 9 张拼图
       const pieceW = cropInfo.sw / 3;
       const pieceH = cropInfo.sh / 3;
       for (let row = 0; row < 3; row++) {
@@ -134,8 +137,13 @@ Page({
         }
       }
 
+      // 2. 保存 1 张【图片+图案】的完整图
+      wx.showLoading({ title: '正在保存完整效果图', mask: true });
+      const fullImagePath = await this.saveFullImageWithShape();
+      await this.saveImg(fullImagePath);
+      previewList.push(fullImagePath);
+
       wx.hideLoading();
-      wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 });
 
       setTimeout(() => {
         wx.redirectTo({
@@ -151,6 +159,45 @@ Page({
     } finally {
       this._saving = false;
     }
+  },
+
+  // ==============================================
+  // 生成并保存：图片 + 图案 合并图
+  // ==============================================
+  saveFullImageWithShape() {
+    return new Promise((resolve, reject) => {
+      const { selectedImage, currentShapeIcon, preW, preH } = this.data;
+      const query = wx.createSelectorQuery().in(this);
+      query.select('#cutCanvas').fields({ node: true, size: true }).exec(res => {
+        if (!res[0]?.node) return reject('Canvas 获取失败');
+        const canvas = res[0].node;
+        const ctx = canvas.getContext('2d');
+        canvas.width = preW;
+        canvas.height = preH;
+
+        const img = canvas.createImage();
+        img.onload = () => {
+          // 画用户图片
+          ctx.drawImage(img, this.data.imgX, this.data.imgY, this.data.imgW, this.data.imgH);
+
+          // 画图案
+          const shapeImg = canvas.createImage();
+          shapeImg.onload = () => {
+            ctx.globalCompositeOperation = 'screen';
+            ctx.drawImage(shapeImg, 0, 0, preW, preH);
+            ctx.globalCompositeOperation = 'source-over';
+
+            wx.canvasToTempFilePath({
+              canvas, quality: 1, fileType: 'jpg',
+              success: (r) => resolve(r.tempFilePath),
+              fail: reject
+            });
+          };
+          shapeImg.src = currentShapeIcon;
+        };
+        img.src = selectedImage;
+      });
+    });
   },
 
   computeCropInfo() {

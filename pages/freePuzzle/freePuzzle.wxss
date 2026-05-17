@@ -19,6 +19,8 @@ page {
   width: 100vw;
   height: 100%;
   background: transparent;
+  background: #d0d0d0
+; /* 这里改成深灰色 */
   display: flex;
   justify-content: center;
   align-items: center;

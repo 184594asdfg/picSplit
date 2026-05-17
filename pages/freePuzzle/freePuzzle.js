@@ -252,9 +252,8 @@ Page({
   },
 
   handleSelectImage() {
-    const count = this.data.currentCount
     wx.chooseMedia({
-      count,
+      count: 9,
       mediaType: ['image'],
       success: res => {
         const paths = res.tempFiles.map(i => i.tempFilePath)
@@ -411,10 +410,31 @@ Page({
           const sy = cell.y + pad + item.offsetY
           ctx.drawImage(img, sx, sy, item.dispW, item.dispH)
         })
-        wx.canvasToTempFilePath({ canvas, success: r => {
-          wx.saveImageToPhotosAlbum({ filePath: r.tempFilePath, success: () => wx.showToast({ title: '保存成功' }) })
-          wx.hideLoading()
-        } })
+        wx.canvasToTempFilePath({
+          canvas,
+          success: r => {
+            const filePath = r.tempFilePath
+            wx.saveImageToPhotosAlbum({
+              filePath,
+              success: () => {
+                wx.hideLoading()
+                setTimeout(() => {
+                  wx.redirectTo({
+                    url: `/pages/result/result?source=puzzle&images=${encodeURIComponent(JSON.stringify([filePath]))}`
+                  })
+                }, 300)
+              },
+              fail: () => {
+                wx.hideLoading()
+                wx.showToast({ title: '保存失败', icon: 'none' })
+              }
+            })
+          },
+          fail: () => {
+            wx.hideLoading()
+            wx.showToast({ title: '生成失败', icon: 'none' })
+          }
+        })
       })
     })
   }
