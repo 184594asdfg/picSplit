@@ -153,6 +153,15 @@ page {
   grid-template-columns: repeat(4, 1fr);
 }
 
+/* 拼图结果：单张大图 */
+.preview-grid.cols-1 {
+  grid-template-columns: 1fr;
+  padding: 0 16px 40px;
+}
+.preview-grid.cols-1 .order-number {
+  display: none;
+}
+
 .preview-item {
   position: relative;
   background-color: transparent;

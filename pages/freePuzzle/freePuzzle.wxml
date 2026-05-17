@@ -1,21 +1,46 @@
 <view class="page-container">
   <view class="preview-area">
-    <view class="preview-black-bg">
+    <view class="preview-stage">
       <view class="puzzle-frame" style="width:{{frameW}}px;height:{{frameH}}px;">
         <view
-          class="puzzle-cell"
+          class="puzzle-cell {{cellImages[index].src && draggingIdx !== index ? 'has-img' : ''}}"
           wx:for="{{cells}}"
           wx:key="idx"
-          style="left:{{item.x}}px;top:{{item.y}}px;width:{{item.w}}px;height:{{item.h}}px;">
-          <image
-            wx:if="{{selectedImages[index]}}"
-            src="{{selectedImages[index]}}"
-            mode="aspectFit"
-            class="cell-img"
-          />
+          data-index="{{index}}"
+          style="left:{{item.x}}px;top:{{item.y}}px;width:{{item.w}}px;height:{{item.h}}px;padding:{{imgPad}}px;"
+          bindtouchstart="onCellTouchStart"
+          bindtouchmove="onCellTouchMove"
+          bindtouchend="onCellTouchEnd"
+          bindtouchcancel="onCellTouchEnd">
+          <view class="cell-inner">
+            <image
+              wx:if="{{cellImages[index].src && draggingIdx !== index}}"
+              class="cell-img"
+              src="{{cellImages[index].src}}"
+              mode="scaleToFill"
+              style="left:{{cellImages[index].offsetX}}px;top:{{cellImages[index].offsetY}}px;width:{{cellImages[index].dispW}}px;height:{{cellImages[index].dispH}}px;"
+            />
+          </view>
         </view>
       </view>
     </view>
+
+    <!-- 长按拖拽时悬浮预览 -->
+    <view
+      wx:if="{{draggingIdx >= 0}}"
+      class="drag-floating"
+      style="left:{{floatX}}px;top:{{floatY}}px;width:{{floatW}}px;height:{{floatH}}px;padding:{{imgPad}}px;">
+      <view class="cell-inner">
+        <image
+          wx:if="{{cellImages[draggingIdx].src}}"
+          class="cell-img"
+          src="{{cellImages[draggingIdx].src}}"
+          mode="scaleToFill"
+          style="left:{{cellImages[draggingIdx].offsetX}}px;top:{{cellImages[draggingIdx].offsetY}}px;width:{{cellImages[draggingIdx].dispW}}px;height:{{cellImages[draggingIdx].dispH}}px;"
+        />
+      </view>
+    </view>
+
     <canvas type="2d" id="saveCanvas" class="save-canvas"></canvas>
   </view>
 

@@ -16,9 +16,12 @@ Page({
     this.setData({ statusBarHeight, navBarHeight })
 
     const source = options.source || ''
+    let gridColumns = 4
+    if (source === 'grid') gridColumns = 3
+    else if (source === 'puzzle') gridColumns = 1
     this.setData({
       source,
-      gridColumns: source === 'grid' ? 3 : 4
+      gridColumns
     })
 
     if (options.images) {

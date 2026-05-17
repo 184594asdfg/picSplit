@@ -12,12 +12,13 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
-.preview-black-bg {
-  width: 95%;
-  height: 90%;
-  background: #000;
-  border-radius: 16rpx;
+.preview-stage {
+  width: 100vw;
+  height: 100%;
+  background: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,15 +33,33 @@ page {
 
 .puzzle-cell {
   position: absolute;
-  background: #ffffff;
-  overflow: hidden;
+  background: #000000;
   box-sizing: border-box;
+  overflow: hidden;
 }
-
-.cell-img {
+.puzzle-cell.has-img {
+  background: transparent;
+}
+.cell-inner {
+  position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+.cell-img {
+  position: absolute;
   display: block;
+}
+
+.drag-floating {
+  position: fixed;
+  z-index: 999;
+  box-sizing: border-box;
+  background: transparent;
+  opacity: 0.88;
+  pointer-events: none;
+  box-shadow: 0 0 24rpx rgba(0,0,0,0.35);
+  transition: none;
 }
 
 .save-canvas {
@@ -51,6 +70,7 @@ page {
   height: 200rpx;
   pointer-events: none;
 }
+
 .bottom-panel {
   background: #fff;
   border-top-left-radius: 26rpx;
@@ -126,50 +146,24 @@ page {
 .ratio-2-1 { width: 140rpx; height: 70rpx; }
 
 .box {
-  border: 2rpx solid #ccc;
+  border: 2rpx solid #333;
   border-radius: 8rpx;
-  background: #fff;
+  background: #000;
   position: relative;
   box-sizing: border-box;
 }
 
-.line-h {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 2rpx;
-  background: #ccc;
+/* 隐藏所有分割线，只保留外框 */
+.box .line-h,
+.box .line-v {
+  display: none !important;
 }
-.mid-h { top: 50%; }
-.one-h { top: 33.333%; }
-.two-h { top: 66.666%; }
-.q1 { top: 25%; }
-.q2 { top: 50%; }
-.q3 { top: 75%; }
 
-.line-v {
-  position: absolute;
-  top: 0;
-  width: 2rpx;
-  height: 100%;
-  background: #ccc;
-}
-.mid-v { left: 50%; }
-.one-v { left: 33.333%; }
-.two-v { left: 66.666%; }
-.f1-v { left: 25%; }
-.f2-v { left: 50%; }
-.f3-v { left: 75%; }
-
-/* 选中仅边框变色 不填满背景 */
-.template-item.active .box{
+/* 选中仅边框变粉 */
+.template-item.active .box {
   border-color: #ff7a9c;
-  background: #fff;
+  background: #000;
   border-width: 3rpx;
-}
-.template-item.active .line-h,
-.template-item.active .line-v {
-  background: #ff7a9c;
 }
 
 .left-icon-inner {
@@ -181,10 +175,10 @@ page {
   justify-content: center;
   font-size: 32rpx;
   font-weight: 600;
-  color: #666;
+  color: #ffffff;
 }
 .line-none {
-  background: linear-gradient(135deg, transparent 48%, #ccc 48%, #ccc 52%, transparent 52%);
+  background: linear-gradient(135deg, transparent 48%, #ffffff 48%, #ffffff 52%, transparent 52%);
   border: none;
 }
 .line-small,
