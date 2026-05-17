@@ -1,4 +1,6 @@
 {
   "usingComponents": {},
-  "navigationStyle": "custom"
+  "navigationBarTitleText": "自由切图",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black"
 }

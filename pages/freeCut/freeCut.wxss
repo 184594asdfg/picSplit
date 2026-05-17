@@ -7,7 +7,8 @@ page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #000;
+
+  background-color: #1a1a1a; /* 舒服的深灰色背景 */
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -251,7 +252,7 @@ page {
 .tab-item {
   flex: 1;
   text-align: center;
-  padding: 12rpx 0;
+  padding: 0rpx 0;
   border-radius: 15rpx 15rpx 0 0;
   font-size: 28rpx;
   color: #888;
@@ -265,7 +266,6 @@ page {
 .tab-item.active {
   background-color: #f7f7f7;
   color: #000;
-  font-weight: bold;
 }
 
 .tab-item.tab-icon {
