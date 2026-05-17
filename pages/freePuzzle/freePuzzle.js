@@ -8,6 +8,7 @@ Page({
     leftIndex: 0,
   },
 
+  // 左侧图标循环切换逻辑
   onLeftIconChange() {
     const list = [
       { type: 'line-none', text: '无边框', letter: '' },
@@ -24,6 +25,7 @@ Page({
     })
   },
 
+  // 右侧模板点击逻辑
   handleTemplateChange(e) {
     this.setData({
       currentTemplate: e.currentTarget.dataset.index

@@ -39,9 +39,14 @@ page {
   padding: 0 30rpx 40rpx;
 }
 .section-title {
-  font-size: 34rpx;
+  font-size: 30rpx;
   color: #007aff;
   margin-bottom: 26rpx;
+  display: flex;
+  align-items: center;
+  height: 60rpx;
+  line-height: 60rpx;
+  border-bottom: 2rpx solid #e5e5e5;
 }
 .template-scroll {
   white-space: nowrap;
@@ -124,17 +129,17 @@ page {
 .f2-v { left: 50%; }
 .f3-v { left: 75%; }
 
+/* 选中仅边框变色 不填满背景 */
 .template-item.active .box{
-  border-color: #ff5e78;
-  background: #ffeef0;
+  border-color: #ff7a9c;
+  background: #fff;
+  border-width: 3rpx;
 }
 .template-item.active .line-h,
 .template-item.active .line-v {
-  background: #fff;
+  background: #ff7a9c;
 }
 
-/* 左侧图标 + 字母居中 */
-/* 左侧四种图标样式 —— 边框粗细完全统一 */
 .left-icon-inner {
   position: absolute;
   inset: 0;
@@ -146,23 +151,29 @@ page {
   font-weight: 600;
   color: #666;
 }
-/* 统一边框：全部 2rpx solid #ccc，和无边框标准一样 */
 .line-none {
   background: linear-gradient(135deg, transparent 48%, #ccc 48%, #ccc 52%, transparent 52%);
   border: none;
 }
-
+.line-small,
+.line-medium,
+.line-large {
+  border: none;
+}
 
 .action-buttons {
   display: flex;
   gap: 24rpx;
-  padding: 0 30rpx 40rpx;
+  padding: 0 30rpx 0rpx;
 }
 .select-btn, .save-btn {
   flex: 1;
   height: 92rpx;
   border-radius: 16rpx;
   font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .select-btn {
   border: 2rpx solid #007aff;

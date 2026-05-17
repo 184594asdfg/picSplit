@@ -4,9 +4,6 @@
   </view>
 
   <view class="bottom-panel">
-    <view class="collapse-btn">
-      <view class="arrow-icon">⌄</view>
-    </view>
 
     <view class="template-section">
       <view class="section-title">模板</view>
