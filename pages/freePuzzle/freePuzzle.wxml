@@ -25,7 +25,6 @@
       </view>
     </view>
 
-    <!-- 长按拖拽时悬浮预览 -->
     <view
       wx:if="{{draggingIdx >= 0}}"
       class="drag-floating"
@@ -45,13 +44,11 @@
   </view>
 
   <view class="bottom-panel">
-
     <view class="template-section">
       <view class="section-title">模板</view>
       <scroll-view class="template-scroll" scroll-x="true" show-scrollbar="false">
         <view class="template-list">
 
-          <!-- 左侧单图模块 -->
           <view class="left-template">
             <view class="template-item" bindtap="onLeftIconChange">
               <view class="box small-box">
@@ -64,59 +61,45 @@
             <view class="split-line"></view>
           </view>
 
-          <!-- 右侧模板原样不动 -->
           <view class="template-item {{currentTemplate==1?'active':''}}" data-index="1" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h mid-h"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==2?'active':''}}" data-index="2" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-v mid-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==3?'active':''}}" data-index="3" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==4?'active':''}}" data-index="4" bindtap="handleTemplateChange">
             <view class="box ratio-1-1"><view class="line-h mid-h"></view><view class="line-v mid-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==5?'active':''}}" data-index="5" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view><view class="line-v mid-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==6?'active':''}}" data-index="6" bindtap="handleTemplateChange">
             <view class="box ratio-1-1"><view class="line-h one-h"></view><view class="line-h two-h"></view><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==7?'active':''}}" data-index="7" bindtap="handleTemplateChange">
             <view class="box ratio-5-3"><view class="line-v mid-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==8?'active':''}}" data-index="8" bindtap="handleTemplateChange">
             <view class="box ratio-5-3"><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==9?'active':''}}" data-index="9" bindtap="handleTemplateChange">
             <view class="box ratio-2-1"><view class="line-v f1-v"></view><view class="line-v f2-v"></view><view class="line-v f3-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==10?'active':''}}" data-index="10" bindtap="handleTemplateChange">
             <view class="box ratio-5-3"><view class="line-h mid-h"></view><view class="line-v one-v"></view><view class="line-v two-v"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==11?'active':''}}" data-index="11" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h mid-h"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==12?'active':''}}" data-index="12" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h one-h"></view><view class="line-h two-h"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==13?'active':''}}" data-index="13" bindtap="handleTemplateChange">
             <view class="box ratio-4-5"><view class="line-h q1"></view><view class="line-h q2"></view><view class="line-h q3"></view></view>
           </view>
-
           <view class="template-item {{currentTemplate==14?'active':''}}" data-index="14" bindtap="handleTemplateChange">
             <view class="box ratio-5-3"><view class="line-v mid-v"></view></view>
           </view>

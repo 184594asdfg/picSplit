@@ -1,5 +1,5 @@
 page {
-  background: #f5f5f5;
+  background: red;
 }
 .page-container {
   width: 100vw;
@@ -18,74 +18,44 @@ page {
 .preview-stage {
   width: 100vw;
   height: 100%;
-  background: #ffffff;
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-  position: relative;
 }
-
 .puzzle-frame {
   position: relative;
-  background: transparent;
+  background: #ffffff;
 }
-
 .puzzle-cell {
   position: absolute;
-  background: #000000;
+  background: #000;
   box-sizing: border-box;
   overflow: hidden;
+  
 }
 .puzzle-cell.has-img {
   background: transparent;
 }
-.cell-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
 .cell-img {
   position: absolute;
-  display: block;
 }
-
 .drag-floating {
   position: fixed;
   z-index: 999;
-  box-sizing: border-box;
-  background: transparent;
-  opacity: 0.88;
+  opacity: 0.85;
   pointer-events: none;
-  box-shadow: 0 0 24rpx rgba(0,0,0,0.35);
-  transition: none;
 }
-
 .save-canvas {
   position: fixed;
-  left: -10000rpx;
-  top: -10000rpx;
-  width: 200rpx;
-  height: 200rpx;
-  pointer-events: none;
+  left: -9999rpx;
+  top: -9999rpx;
 }
-
 .bottom-panel {
   background: #fff;
   border-top-left-radius: 26rpx;
   border-top-right-radius: 26rpx;
   padding-bottom: env(safe-area-inset-bottom);
-}
-.collapse-btn {
-  height: 60rpx;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.arrow-icon {
-  font-size: 30rpx;
-  color: #ccc;
 }
 .template-section {
   padding: 0 30rpx 40rpx;
@@ -94,103 +64,130 @@ page {
   font-size: 30rpx;
   color: #007aff;
   margin-bottom: 26rpx;
-  display: flex;
-  align-items: center;
   height: 60rpx;
   line-height: 60rpx;
   border-bottom: 2rpx solid #e5e5e5;
 }
+
+/* 滚动布局 */
 .template-scroll {
-  white-space: nowrap;
+  width: 100%;
 }
 .template-list {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  box-sizing: border-box;
 }
-
 .left-template {
   display: flex;
   align-items: center;
   margin-right: 20rpx;
 }
-
 .split-line {
   width: 2rpx;
   height: 70rpx;
-  background: #ccc !important;
+  background: #ccc;
   margin-left: 20rpx;
-  display: block;
 }
 
+/* 模板小格子样式（修复不挤压、比例正常） */
 .template-item {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 25rpx;
+  margin: 0 40rpx;
+}
+.box {
+  position: relative;
+  border: 2rpx solid #333;
+  border-radius: 6rpx;
+  background: #fff;
+  box-sizing: border-box;
+}
+/* -------- 左侧变小 -------- */
+/* 左侧整体模板项加宽 */
+.left-template .template-item {
+  width: 65rpx;
+}
+.small-box {
+  width: 46rpx !important;
+  height: 46rpx !important;
+}
+.ratio-4-5 {
+  width: 60rpx;
+  height: 75rpx;
+}
+.ratio-1-1 {
+  width: 75rpx;
+  height: 75rpx;
+}
+.ratio-5-3 {
+  width: 75rpx;
+  height: 45rpx;
+}
+.ratio-2-1 {
+  width: 80rpx;
+  height: 40rpx;
 }
 
-.small-box {
-  width: 60rpx !important;
-  height: 60rpx !important;
+/* 分割线 */
+.line-h, .line-v {
+  position: absolute;
+  background: #333;
+}
+.line-h { width: 100%; height: 2rpx; }
+.line-v { width: 2rpx; height: 100%; }
+.mid-h { top: 50%; transform: translateY(-50%); }
+.mid-v { left: 50%; transform: translateX(-50%); }
+.one-h { top: 33.33%; }
+.two-h { top: 66.66%; }
+.one-v { left: 33.33%; }
+.two-v { left: 66.66%; }
+.f1-v { left: 25%; }
+.f2-v { left: 50%; }
+.f3-v { left: 75%; }
+.q1 { top: 25%; }
+.q2 { top: 50%; }
+.q3 { top: 75%; }
+
+/* 选中高亮 */
+.template-item.active .box {
+  border-color: #ff7a9c;
+  background: #ffe6eb;
+}
+.template-item.active .line-h,
+.template-item.active .line-v {
+  background: #ff7a9c;
 }
 
 .item-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #666;
-  margin-top: 8rpx;
-}
-
-.ratio-4-5 { width: 80rpx; height: 100rpx; }
-.ratio-1-1 { width: 100rpx; height: 100rpx; }
-.ratio-5-3 { width: 125rpx; height: 75rpx; }
-.ratio-2-1 { width: 140rpx; height: 70rpx; }
-
-.box {
-  border: 2rpx solid #333;
-  border-radius: 8rpx;
-  background: #000;
-  position: relative;
-  box-sizing: border-box;
-}
-
-/* 隐藏所有分割线，只保留外框 */
-.box .line-h,
-.box .line-v {
-  display: none !important;
-}
-
-/* 选中仅边框变粉 */
-.template-item.active .box {
-  border-color: #ff7a9c;
-  background: #000;
-  border-width: 3rpx;
+  margin-top: 6rpx;
+  text-align: center;
 }
 
 .left-icon-inner {
-  position: absolute;
-  inset: 0;
-  border-radius: 6rpx;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 26rpx; /* 文字也变小 */
+  color: #333;
+  border: 1rpx solid #333;
+  border-radius: 6rpx;
+  box-sizing: border-box;
 }
 .line-none {
-  background: linear-gradient(135deg, transparent 48%, #ffffff 48%, #ffffff 52%, transparent 52%);
-  border: none;
-}
-.line-small,
-.line-medium,
-.line-large {
-  border: none;
+  background: linear-gradient(135deg, transparent 48%, #333 48%, #333 52%, transparent 52%);
 }
 
 .action-buttons {
   display: flex;
   gap: 24rpx;
-  padding: 0 30rpx 0rpx;
+  padding: 0 30rpx 20rpx;
 }
 .select-btn, .save-btn {
   flex: 1;
