@@ -1,5 +1,6 @@
 Page({
   data: {
+    statusBarHeight: 0,
     selectedImage: null,
     imgWidth: 0,
     imgHeight: 0,
@@ -56,6 +57,10 @@ Page({
   },
 
   onLoad(options) {
+    const systemInfo = wx.getSystemInfoSync()
+    this.setData({
+      statusBarHeight: systemInfo.statusBarHeight
+    })
     this.initLayout()
     if (options && options.image) {
       const imagePath = decodeURIComponent(options.image)

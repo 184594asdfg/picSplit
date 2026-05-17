@@ -13,11 +13,11 @@ Page({
         name: '自由切图',
         desc: '自定义分割图片'
       },
-      // {
-      //   id: 3,
-      //   name: '自由切图',
-      //   desc: '自定义分割方式'
-      // }
+      {
+        id: 3,
+        name: '自由拼图',
+        desc: '多张图片拼接'
+      }
     ]
   },
 
@@ -41,6 +41,10 @@ Page({
     } else if (id === 2) {
       // 自由切图：先选择图片
       this.chooseImageForFreeCut()
+    } else if (id === 3) {
+      wx.navigateTo({
+        url: '/pages/freePuzzle/freePuzzle'
+      })
     } else {
       wx.showToast({
         title: '功能开发中',

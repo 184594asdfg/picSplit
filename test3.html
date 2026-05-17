@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .nav-bar {
+            height: 88px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .nav-back {
+            font-size: 24px;
+            color: #333;
+            text-decoration: none;
+        }
+        .nav-title {
+            font-size: 34px;
+            font-weight: 500;
+            color: #333;
+        }
+        .nav-right {
+            display: flex;
+            gap: 12px;
+        }
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* 预览区 */
+        .preview-area {
+            flex: 1;
+            background: #000;
+            position: relative;
+        }
+        .expand-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100px;
+            height: 60px;
+            background: #fff;
+            border: none;
+            font-size: 24px;
+            color: #999;
+        }
+
+        /* 模板区 */
+        .template-section {
+            background: #fff;
+            padding: 24px 16px;
+        }
+        .template-title {
+            font-size: 32px;
+            color: #1677ff;
+            margin-bottom: 24px;
+        }
+        .template-scroll {
+            display: flex;
+            gap: 32px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .template-scroll::-webkit-scrollbar { display: none; }
+
+        .template-item {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .template-name {
+            font-size: 24px;
+            color: #666;
+        }
+        .template-item.active .template-name {
+            color: #ff7875;
+        }
+
+        /* --- 所有图案 统一大小 无多余外框 --- */
+        .shape {
+            width: 60px;
+            height: 80px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+        }
+        .template-item.active .shape {
+            border-color: #ff7875;
+        }
+
+        /* 无边框 */
+        .no-border {
+            position: relative;
+        }
+        .no-border::after {
+            content: "";
+            position: absolute;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, transparent 49%, #ccc 49%, #ccc 51%, transparent 51%);
+        }
+        .template-item.active .no-border::after {
+            background: linear-gradient(135deg, transparent 49%, #ff7875 49%, #ff7875 51%, transparent 51%);
+        }
+
+        /* 竖2格 */
+        .v2 {
+            display: flex;
+            flex-direction: column;
+        }
+        .v2 .row {
+            flex: 1;
+            border-bottom: 2px solid #ccc;
+        }
+        .v2 .row:last-child { border: none; }
+        .template-item.active .v2 .row {
+            border-color: #ff7875;
+        }
+
+        /* 横2格 */
+        .h2 {
+            width: 80px;
+            height: 60px;
+            display: flex;
+        }
+        .h2 .col {
+            flex: 1;
+            border-right: 2px solid #ccc;
+        }
+        .h2 .col:last-child { border: none; }
+        .template-item.active .h2 .col {
+            border-color: #ff7875;
+        }
+
+        /* 竖3格 */
+        .v3 {
+            display: flex;
+            flex-direction: column;
+        }
+        .v3 .row {
+            flex: 1;
+            border-bottom: 2px solid #ccc;
+        }
+        .v3 .row:last-child { border: none; }
+        .template-item.active .v3 .row {
+            border-color: #ff7875;
+        }
+
+        /* 2x2四宫格 */
+        .grid22 {
+            width: 80px;
+            height: 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            background: #ccc;
+        }
+        .grid22 .cell { background: #fff; }
+        .template-item.active .grid22 {
+            background: #ff7875;
+        }
+
+        /* 底部按钮 */
+        .button-bar {
+            background: #fff;
+            padding: 24px 16px 40px;
+            display: flex;
+            gap: 24px;
+        }
+        .btn {
+            flex: 1;
+            height: 88px;
+            border-radius: 16px;
+            font-size: 36px;
+            border: none;
+        }
+        .btn-select {
+            background: #fff;
+            color: #1677ff;
+            border: 3px solid #1677ff !important;
+        }
+        .btn-save {
+            background: #2385f0;
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a class="nav-back">&lt;</a>
+    <div class="nav-title">拼图</div>
+    <div class="nav-right">
+        <div class="nav-icon">•••</div>
+        <div class="nav-icon">—</div>
+        <div class="nav-icon">◎</div>
+    </div>
+</div>
+
+<div class="preview-area">
+    <button class="expand-btn">⌄</button>
+</div>
+
+<div class="template-section">
+    <div class="template-title">模板</div>
+    <div class="template-scroll">
+
+        <div class="template-item">
+            <div class="shape no-border"></div>
+            <div class="template-name">无边框</div>
+        </div>
+
+        <div class="template-item active">
+            <div class="shape v2">
+                <div class="row"></div>
+                <div class="row"></div>
+            </div>
+        </div>
+
+        <div class="template-item">
+            <div class="shape h2">
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+        </div>
+
+        <div class="template-item">
+            <div class="shape v3">
+                <div class="row"></div>
+                <div class="row"></div>
+                <div class="row"></div>
+            </div>
+        </div>
+
+        <div class="template-item">
+            <div class="shape grid22">
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="button-bar">
+    <button class="btn btn-select">选择图片(1~9张)</button>
+    <button class="btn btn-save">保存图片</button>
+</div>
+
+</body>
+</html>

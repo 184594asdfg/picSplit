@@ -1,5 +1,6 @@
 Page({
   data: {
+    statusBarHeight: 0,
     shapes: [
       { id: 1, icon: '/images/masks/IMG_2413.jpg' },
       { id: 2, icon: '/images/masks/circle.jpg' },
@@ -30,7 +31,15 @@ Page({
   },
 
   onLoad() {
+    const systemInfo = wx.getSystemInfoSync()
+    this.setData({
+      statusBarHeight: systemInfo.statusBarHeight
+    })
     this.getPreviewSize();
+  },
+
+  onBack() {
+    wx.navigateBack()
   },
 
   getPreviewSize() {

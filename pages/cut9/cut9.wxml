@@ -1,4 +1,9 @@
 <view class="container">
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="onBack">←</view>
+    <view class="nav-title">九宫格切图</view>
+    <view class="nav-actions"></view>
+  </view>
   <view class="main-content">
     <view class="grid-container">
       <view class="preview-area" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd">

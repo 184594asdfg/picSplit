@@ -7,6 +7,32 @@
   box-sizing: border-box;
 }
 
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.nav-back {
+  font-size: 24px;
+  color: #333;
+}
+
+.nav-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #000;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .main-content {
   flex: 1;
   display: flex;

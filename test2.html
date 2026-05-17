@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼图模板全量绘制</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #ffffff;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+        /* 模板行容器 */
+        .template-row {
+            display: flex;
+            gap: 80px;
+            align-items: center;
+        }
+        /* 单个模板通用样式 */
+        .template-item {
+            border: 2px solid #cccccc;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        /* ========== 第一行 5个模板 ========== */
+        /* 1. 2格横版（宽） */
+        .grid-2h-wide {
+            width: 160px;
+            height: 100px;
+            display: flex;
+        }
+        .grid-2h-wide .col {
+            flex: 1;
+            border-right: 2px solid #cccccc;
+        }
+        .grid-2h-wide .col:last-child {
+            border-right: none;
+        }
+        /* 2. 3格横版（宽） */
+        .grid-3h-wide {
+            width: 180px;
+            height: 100px;
+            display: flex;
+        }
+        .grid-3h-wide .col {
+            flex: 1;
+            border-right: 2px solid #cccccc;
+        }
+        .grid-3h-wide .col:last-child {
+            border-right: none;
+        }
+        /* 3. 4格横版（宽） */
+        .grid-4h-wide {
+            width: 200px;
+            height: 80px;
+            display: flex;
+        }
+        .grid-4h-wide .col {
+            flex: 1;
+            border-right: 2px solid #cccccc;
+        }
+        .grid-4h-wide .col:last-child {
+            border-right: none;
+        }
+        /* 4. 3x2 六宫格（横版） */
+        .grid-3x2-wide {
+            width: 180px;
+            height: 100px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            background-color: #cccccc;
+        }
+        .grid-3x2-wide .cell {
+            background-color: #ffffff;
+        }
+        /* 5. 2格竖版（高） */
+        .grid-2v-tall {
+            width: 100px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-2v-tall .row {
+            flex: 1;
+            border-bottom: 2px solid #cccccc;
+        }
+        .grid-2v-tall .row:last-child {
+            border-bottom: none;
+        }
+        /* ========== 第二行 5个模板 ========== */
+        /* 1. 2格竖版（高） */
+        .grid-2v-tall-2 {
+            width: 100px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-2v-tall-2 .row {
+            flex: 1;
+            border-bottom: 2px solid #cccccc;
+        }
+        .grid-2v-tall-2 .row:last-child {
+            border-bottom: none;
+        }
+        /* 2. 3格竖版（高） */
+        .grid-3v-tall {
+            width: 100px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-3v-tall .row {
+            flex: 1;
+            border-bottom: 2px solid #cccccc;
+        }
+        .grid-3v-tall .row:last-child {
+            border-bottom: none;
+        }
+        /* 3. 4格竖版（高） */
+        .grid-4v-tall {
+            width: 100px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-4v-tall .row {
+            flex: 1;
+            border-bottom: 2px solid #cccccc;
+        }
+        .grid-4v-tall .row:last-child {
+            border-bottom: none;
+        }
+        /* 4. 2格横版（宽） */
+        .grid-2h-wide-2 {
+            width: 160px;
+            height: 100px;
+            display: flex;
+        }
+        .grid-2h-wide-2 .col {
+            flex: 1;
+            border-right: 2px solid #cccccc;
+        }
+        .grid-2h-wide-2 .col:last-child {
+            border-right: none;
+        }
+        /* 5. 3格横版（宽） */
+        .grid-3h-wide-2 {
+            width: 180px;
+            height: 80px;
+            display: flex;
+        }
+        .grid-3h-wide-2 .col {
+            flex: 1;
+            border-right: 2px solid #cccccc;
+        }
+        .grid-3h-wide-2 .col:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一行 5个模板 -->
+    <div class="template-row">
+        <!-- 1. 2格横版（宽） -->
+        <div class="template-item grid-2h-wide">
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+        <!-- 2. 3格横版（宽） -->
+        <div class="template-item grid-3h-wide">
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+        <!-- 3. 4格横版（宽） -->
+        <div class="template-item grid-4h-wide">
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+        <!-- 4. 3x2 六宫格（横版） -->
+        <div class="template-item grid-3x2-wide">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <!-- 5. 2格竖版（高） -->
+        <div class="template-item grid-2v-tall">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+    </div>
+
+    <!-- 第二行 5个模板 -->
+    <div class="template-row">
+        <!-- 1. 2格竖版（高） -->
+        <div class="template-item grid-2v-tall-2">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <!-- 2. 3格竖版（高） -->
+        <div class="template-item grid-3v-tall">
+            <div class="row"></div>
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <!-- 3. 4格竖版（高） -->
+        <div class="template-item grid-4v-tall">
+            <div class="row"></div>
+            <div class="row"></div>
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <!-- 4. 2格横版（宽） -->
+        <div class="template-item grid-2h-wide-2">
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+        <!-- 5. 3格横版（宽） -->
+        <div class="template-item grid-3h-wide-2">
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+    </div>
+</body>
+</html>

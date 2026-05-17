@@ -108,6 +108,10 @@ page {
   background: linear-gradient(180deg, #ff7eb6, #ff9b6b);
 }
 
+.card-3::before {
+  background: linear-gradient(180deg, #6bd9a6, #4fbf8f);
+}
+
 .card-hover {
   transform: translateY(2rpx) scale(0.99);
   box-shadow: 0 4rpx 16rpx rgba(60, 70, 130, 0.1);
@@ -130,6 +134,10 @@ page {
 
 .card-2 .card-icon {
   background: linear-gradient(135deg, #fff0f6, #ffe4d6);
+}
+
+.card-3 .card-icon {
+  background: linear-gradient(135deg, #e6fff5, #d4f5e5);
 }
 
 .icon-grid {
@@ -168,6 +176,26 @@ page {
 
 .icon-free-cell.wide {
   flex: 2;
+}
+
+.icon-puzzle {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.icon-puzzle-row {
+  flex: 1;
+  display: flex;
+  gap: 4rpx;
+}
+
+.icon-puzzle-cell {
+  flex: 1;
+  background: #6bd9a6;
+  border-radius: 4rpx;
 }
 
 .card-info {

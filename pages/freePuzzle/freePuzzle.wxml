@@ -1,0 +1,126 @@
+<view class="container">
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="onBack">
+      <text class="nav-back-icon">‹</text>
+    </view>
+    <view class="nav-title">自由拼图</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <view class="preview-area">
+    <view
+      class="preview-card preview-layout-{{selectedTemplate.type}} preview-border-{{borderSize}}"
+      style="{{previewStyle}}"
+      wx:if="{{selectedTemplate}}"
+    >
+      <block wx:if="{{selectedTemplate.type === 'border'}}">
+        <view class="preview-block preview-block-full" bindtap="onTapBlock" data-index="0">
+          <image wx:if="{{selectedImages[0]}}" src="{{selectedImages[0]}}" mode="aspectFill" class="preview-image"></image>
+          <view wx:else class="preview-empty"><text class="preview-empty-text">+</text></view>
+        </view>
+      </block>
+      <block wx:elif="{{selectedTemplate.type !== 'border'}}">
+        <view
+          class="preview-block"
+          wx:for="{{selectedTemplate.slots}}"
+          wx:key="*this"
+          bindtap="onTapBlock"
+          data-index="{{index}}"
+        >
+          <image wx:if="{{selectedImages[index]}}" src="{{selectedImages[index]}}" mode="aspectFill" class="preview-image"></image>
+          <view wx:else class="preview-empty"><text class="preview-empty-text">+</text></view>
+        </view>
+      </block>
+    </view>
+    <view class="preview-hint" wx:if="{{selectedImages.length === 0}}">点击格子或下方按钮添加图片</view>
+  </view>
+
+  <view class="panel template-bar">
+    <view class="panel-title">
+      <view class="panel-title-bar"></view>
+      <text>选择模板</text>
+    </view>
+    <scroll-view class="template-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="template-wrapper">
+        <view class="template-left">
+          <view
+            class="template-border-wrap {{selectedTemplateIndex === 0 ? 'active' : ''}}"
+            bindtap="onTapBorderControl"
+          >
+            <view class="border-icon border-icon-{{borderSize}}"></view>
+            <view class="template-text">{{borderSizeLabel}}</view>
+          </view>
+        </view>
+
+        <view class="template-divider"></view>
+
+        <view class="template-right">
+          <block wx:for="{{templates}}" wx:key="type">
+            <view
+              wx:if="{{index > 0}}"
+              class="template-icon-wrapper {{selectedTemplateIndex === index ? 'active' : ''}}"
+              bindtap="onSelectTemplate"
+              data-index="{{index}}"
+            >
+              <!-- 统一使用你html标准分割样式 -->
+              <view wx:if="{{item.type == '2h'}}" class="shape v2">
+                <view class="row"></view>
+                <view class="row"></view>
+              </view>
+              <view wx:if="{{item.type == '2v'}}" class="shape h2">
+                <view class="col"></view>
+                <view class="col"></view>
+              </view>
+              <view wx:if="{{item.type == '3h'}}" class="shape h3">
+                <view class="col"></view>
+                <view class="col"></view>
+                <view class="col"></view>
+              </view>
+              <view wx:if="{{item.type == '4h'}}" class="shape h4">
+                <view class="col"></view>
+                <view class="col"></view>
+                <view class="col"></view>
+                <view class="col"></view>
+              </view>
+              <view wx:if="{{item.type == '3v'}}" class="shape v3">
+                <view class="row"></view>
+                <view class="row"></view>
+                <view class="row"></view>
+              </view>
+              <view wx:if="{{item.type == '4v'}}" class="shape v4">
+                <view class="row"></view>
+                <view class="row"></view>
+                <view class="row"></view>
+                <view class="row"></view>
+              </view>
+              <view wx:if="{{item.type == '2x2'}}" class="shape grid22">
+                <view class="cell"></view>
+                <view class="cell"></view>
+                <view class="cell"></view>
+                <view class="cell"></view>
+              </view>
+              <view wx:if="{{item.type == '3x2'}}" class="shape grid32">
+                <view class="cell"></view><view class="cell"></view><view class="cell"></view>
+                <view class="cell"></view><view class="cell"></view><view class="cell"></view>
+              </view>
+              <view wx:if="{{item.type == '3x3'}}" class="shape grid33">
+                <view class="cell"></view><view class="cell"></view><view class="cell"></view>
+                <view class="cell"></view><view class="cell"></view><view class="cell"></view>
+                <view class="cell"></view><view class="cell"></view><view class="cell"></view>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="panel action-bar">
+    <button class="action-btn btn-select" bindtap="onChooseImages">
+      选择图片 ({{selectedImages.length}}/{{selectedTemplate.count}})
+    </button>
+    <button class="action-btn btn-save" bindtap="onSavePuzzle">保存图片</button>
+  </view>
+
+  <canvas type="2d" id="puzzleCanvas" class="puzzle-canvas"></canvas>
+</view>

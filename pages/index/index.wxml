@@ -32,7 +32,7 @@
             <view class="icon-cell"></view>
           </view>
         </block>
-        <block wx:else>
+        <block wx:elif="{{item.id === 2}}">
           <view class="icon-free">
             <view class="icon-free-row">
               <view class="icon-free-cell"></view>
@@ -41,6 +41,18 @@
             <view class="icon-free-row">
               <view class="icon-free-cell wide"></view>
               <view class="icon-free-cell"></view>
+            </view>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="icon-puzzle">
+            <view class="icon-puzzle-row">
+              <view class="icon-puzzle-cell"></view>
+              <view class="icon-puzzle-cell"></view>
+            </view>
+            <view class="icon-puzzle-row">
+              <view class="icon-puzzle-cell"></view>
+              <view class="icon-puzzle-cell"></view>
             </view>
           </view>
         </block>
@@ -71,7 +83,7 @@
         <view class="chat-dot chat-dot-2"></view>
         <view class="chat-dot chat-dot-3"></view>
       </view>
-      <text class="action-text">意见反馈</text>
+      <text class="action-text">在线反馈</text>
     </button>
   </view>
 
