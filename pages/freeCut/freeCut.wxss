@@ -242,37 +242,17 @@ page {
 .tab-bar {
   background-color: #e5e5e5;
   display: flex;
-  align-items: center;
-  padding: 10rpx 0rpx 0rpx 32rpx;
+  align-items: stretch;
+  padding: 10rpx 0 0 0;
   border-radius: 40rpx 40rpx 0 0;
-}
-
-.tab-icon {
-  width: 60rpx;
-  text-align: center;
-  font-size: 32rpx;
-  color: #666;
-}
-
-.tab-confirm {
-  color: #1890ff;
-  font-weight: 600;
-}
-.tab-confirm:active {
-  opacity: 0.6;
-}
-
-.tab-group {
-  flex: 1;
-  display: flex;
-  gap: 8rpx;
+  gap: 4rpx;
 }
 
 .tab-item {
   flex: 1;
   text-align: center;
   padding: 12rpx 0;
-  border-radius: 15rpx 15rpx 0rpx 0rpx;
+  border-radius: 15rpx 15rpx 0 0;
   font-size: 28rpx;
   color: #888;
   display: flex;
@@ -286,6 +266,20 @@ page {
   background-color: #f7f7f7;
   color: #000;
   font-weight: bold;
+}
+
+.tab-item.tab-icon {
+  font-size: 32rpx;
+  color: #666;
+}
+
+.tab-item.tab-confirm {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.tab-item.tab-confirm:active {
+  opacity: 0.6;
 }
 
 .mode-bar {

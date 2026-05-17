@@ -2,6 +2,17 @@ Page({
   data: {
     shapes: [
       { id: 1, icon: '/images/masks/square.png' },
+      { id: 2, icon: '/images/masks/circle.png' },
+      { id: 3, icon: '/images/masks/heart.png' },
+      { id: 4, icon: '/images/masks/star_mask.png' },
+      { id: 5, icon: '/images/masks/flower.png' },
+      { id: 6, icon: '/images/masks/clover.png' },
+      { id: 7, icon: '/images/masks/cloud.png' },
+      { id: 8, icon: '/images/masks/hex_mask.png' },
+      { id: 9, icon: '/images/masks/blob_mask.png' },
+      { id: 10, icon: '/images/masks/leaf_mask.png' },
+      { id: 11, icon: '/images/masks/burst_mask.png' },
+      { id: 12, icon: '/images/masks/spike_mask.png' },
     ],
     selectedShape: 1,
     selectedImage: null,

@@ -1,21 +1,79 @@
-<view class="container">
- 
+<view class="page">
+  <view class="bg-decor bg-decor-1"></view>
+  <view class="bg-decor bg-decor-2"></view>
 
-  <view class="header">
-    <text class="title">九宫格切图</text>
-    <text class="subtitle">简单高效的图片处理工具</text>
+  <view class="hero">
+    <view class="hero-badge">PIC SPLIT</view>
+    <view class="hero-title">图片切割助手</view>
+    <view class="hero-subtitle">一键切图 · 朋友圈九宫格 · 自由分割</view>
   </view>
 
-  <view class="function-list">
-    <view 
-      wx:for="{{functions}}" 
+  <view class="card-list">
+    <view
+      wx:for="{{functions}}"
       wx:key="id"
-      class="function-item"
+      class="card card-{{item.id}}"
       data-id="{{item.id}}"
       bindtap="onTapFunction"
+      hover-class="card-hover"
+      hover-stay-time="120"
     >
-      <view class="name">{{item.name}}</view>
-      <view class="desc">{{item.desc}}</view>
+      <view class="card-icon">
+        <block wx:if="{{item.id === 1}}">
+          <view class="icon-grid">
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+            <view class="icon-cell"></view>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="icon-free">
+            <view class="icon-free-row">
+              <view class="icon-free-cell"></view>
+              <view class="icon-free-cell wide"></view>
+            </view>
+            <view class="icon-free-row">
+              <view class="icon-free-cell wide"></view>
+              <view class="icon-free-cell"></view>
+            </view>
+          </view>
+        </block>
+      </view>
+      <view class="card-info">
+        <view class="card-title">{{item.name}}</view>
+        <view class="card-desc">{{item.desc}}</view>
+      </view>
+      <view class="card-arrow">›</view>
     </view>
   </view>
+
+  <view class="action-bar">
+    <button class="action-btn" open-type="share" hover-class="action-hover">
+      <view class="action-icon action-icon-share">
+        <view class="share-dot share-dot-1"></view>
+        <view class="share-dot share-dot-2"></view>
+        <view class="share-dot share-dot-3"></view>
+        <view class="share-line share-line-1"></view>
+        <view class="share-line share-line-2"></view>
+      </view>
+      <text class="action-text">分享好友</text>
+    </button>
+    <button class="action-btn" open-type="contact" hover-class="action-hover">
+      <view class="action-icon action-icon-feedback">
+        <view class="chat-bubble"></view>
+        <view class="chat-dot chat-dot-1"></view>
+        <view class="chat-dot chat-dot-2"></view>
+        <view class="chat-dot chat-dot-3"></view>
+      </view>
+      <text class="action-text">意见反馈</text>
+    </button>
+  </view>
+
+  <view class="footer">Made with care · v1.0</view>
 </view>

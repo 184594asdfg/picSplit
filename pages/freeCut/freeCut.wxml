@@ -70,17 +70,15 @@
 
   <view class="operation">
     <view class="tab-bar">
-      <view class="tab-icon">❔</view>
-      <view class="tab-group">
-        <view
-          wx:for="{{tabList}}"
-          wx:key="index"
-          class="tab-item {{activeTab === item.index ? 'active' : ''}}"
-          data-index="{{item.index}}"
-          bindtap="onTabChange"
-        >{{item.name}}</view>
-      </view>
-      <view class="tab-icon tab-confirm" bindtap="onConfirm">✓</view>
+      <view class="tab-item tab-icon">❔</view>
+      <view
+        wx:for="{{tabList}}"
+        wx:key="index"
+        class="tab-item {{activeTab === item.index ? 'active' : ''}}"
+        data-index="{{item.index}}"
+        bindtap="onTabChange"
+      >{{item.name}}</view>
+      <view class="tab-item tab-icon tab-confirm" bindtap="onConfirm">✓</view>
     </view>
 
     <view class="mode-bar">

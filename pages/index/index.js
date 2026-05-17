@@ -64,5 +64,18 @@ Page({
         console.log('用户取消选择图片')
       }
     })
+  },
+
+  onShareAppMessage() {
+    return {
+      title: '图片切割助手 - 一键九宫格 / 自由分割',
+      path: '/pages/index/index'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '图片切割助手 - 一键九宫格 / 自由分割'
+    }
   }
 })
