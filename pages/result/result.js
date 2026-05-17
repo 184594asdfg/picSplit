@@ -69,9 +69,6 @@ Page({
     })
   },
 
-  onToggleExpand() {
-    wx.showToast({ title: '展开/收起功能开发中', icon: 'none' })
-  },
 
   onPreviewTap(e) {
     const index = e.currentTarget.dataset.index

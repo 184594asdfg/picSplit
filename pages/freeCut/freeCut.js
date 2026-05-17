@@ -263,11 +263,27 @@ Page({
   onDividerTouchEnd() { this._dragDivider = null },
   onFrameTouchStart(e) {
     if (this.data.modeType !== 'fixed') return
+    if (e.touches.length >= 2) {
+      this._beginPinch(e)
+      this._dragFrame = null
+      return
+    }
+    this._pinchFrame = null
     this._dragFrame = { startClientX: e.touches[0].clientX, startClientY: e.touches[0].clientY, startOffsetX: this.data.fixedOffsetX, startOffsetY: this.data.fixedOffsetY, moved: false }
   },
   onFrameTouchMove(e) {
-    if (this.data.modeType !== 'fixed' || !this._dragFrame) return
+    if (this.data.modeType !== 'fixed') return
     if (!this._displaySize) return
+
+    if (e.touches.length >= 2) {
+      if (!this._pinchFrame) this._beginPinch(e)
+      this._handlePinch(e)
+      return
+    }
+
+    if (this._pinchFrame) return
+
+    if (!this._dragFrame) return
     const { width, height } = this._displaySize
     const { fixedGridW, fixedGridH } = this.data
     const dx = e.touches[0].clientX - this._dragFrame.startClientX
@@ -281,7 +297,61 @@ Page({
     this.setData({ fixedOffsetX: newX, fixedOffsetY: newY })
     this.applyFrameStyle()
   },
-  onFrameTouchEnd() { this._dragFrame = null },
+  onFrameTouchEnd(e) {
+    if (e && e.touches && e.touches.length >= 2) return
+    this._dragFrame = null
+    this._pinchFrame = null
+  },
+
+  _beginPinch(e) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const dx = t2.clientX - t1.clientX
+    const dy = t2.clientY - t1.clientY
+    const startDistance = Math.max(1, Math.sqrt(dx * dx + dy * dy))
+    this._pinchFrame = {
+      startDistance,
+      startGridW: this.data.fixedGridW,
+      startGridH: this.data.fixedGridH,
+      startOffsetX: this.data.fixedOffsetX,
+      startOffsetY: this.data.fixedOffsetY
+    }
+  },
+
+  _handlePinch(e) {
+    if (!this._pinchFrame) return
+    const { width, height } = this._displaySize
+    const { gridCols, gridRows } = this.data
+    const { startDistance, startGridW, startGridH, startOffsetX, startOffsetY } = this._pinchFrame
+
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const dx = t2.clientX - t1.clientX
+    const dy = t2.clientY - t1.clientY
+    const currentDistance = Math.max(1, Math.sqrt(dx * dx + dy * dy))
+
+    let scale = currentDistance / startDistance
+
+    const maxScale = Math.min(width / startGridW, height / startGridH)
+    const minCellPx = 20
+    const startCellW = startGridW / gridCols
+    const startCellH = startGridH / gridRows
+    const minScale = Math.max(minCellPx / startCellW, minCellPx / startCellH)
+    scale = Math.max(minScale, Math.min(maxScale, scale))
+
+    const newGridW = startGridW * scale
+    const newGridH = startGridH * scale
+
+    const centerX = startOffsetX + startGridW / 2
+    const centerY = startOffsetY + startGridH / 2
+    let newX = centerX - newGridW / 2
+    let newY = centerY - newGridH / 2
+    newX = Math.max(0, Math.min(width - newGridW, newX))
+    newY = Math.max(0, Math.min(height - newGridH, newY))
+
+    this.setData({ fixedGridW: newGridW, fixedGridH: newGridH, fixedOffsetX: newX, fixedOffsetY: newY })
+    this.applyFrameStyle()
+  },
   onChooseImage() {
     wx.chooseMedia({ count: 1, mediaType: ['image'], sizeType: ['original'], sourceType: ['album'], success: (res) => { const file = res.tempFiles[0]; if (!file) return; this.setImageFromPath(file.tempFilePath) } })
   },

@@ -32,7 +32,7 @@
 
   <!-- 下载顺序标题 -->
   <view class="order-title">下载的顺序</view>
-  <view class="expand-icon" bindtap="onToggleExpand">⌄</view>
+  <view class="expand-icon" >⌄</view>
 
   <!-- 宫格预览区：九宫格来源一行 3 个，其他一行 4 个 -->
   <view class="preview-grid {{gridColumns === 3 ? 'cols-3' : 'cols-4'}}">
