@@ -42,26 +42,21 @@ Page({
     gridCells: [],
     selectedCells: [],
 
-    // 自由模式：每格在所在轴上的占比，sum = 1
     colFractions: [],
     rowFractions: [],
-    // 自由模式分割线相对 grid-frame 的位置百分比（0-100）
     colDividers: [],
     rowDividers: [],
 
-    // 固定模式：网格在图片显示区域内的偏移和尺寸（单位 px）
     fixedGridW: 0,
     fixedGridH: 0,
     fixedOffsetX: 0,
     fixedOffsetY: 0,
 
-    // 当前 grid-frame 的 inline style
     frameStyle: ''
   },
 
   onLoad(options) {
     this.initLayout()
-
     if (options && options.image) {
       const imagePath = decodeURIComponent(options.image)
       this.setImageFromPath(imagePath)
@@ -80,7 +75,6 @@ Page({
       },
       fail: (err) => {
         console.error('获取图片信息失败', err)
-        wx.showToast({ title: '读取图片失败', icon: 'none' })
       }
     })
   },
@@ -92,16 +86,13 @@ Page({
   calculateGridOverlay() {
     const { imgWidth, imgHeight } = this.data
     if (!imgWidth || !imgHeight) return
-
     const query = wx.createSelectorQuery().in(this)
     query.select('.image-container').boundingClientRect()
     query.exec((res) => {
       const container = res[0]
-      if (!container || !container.width || !container.height) return
-
+      if (!container) return
       const imgRatio = imgWidth / imgHeight
       const containerRatio = container.width / container.height
-
       let displayWidth, displayHeight, offsetX, offsetY
 
       if (imgRatio > containerRatio) {
@@ -117,6 +108,11 @@ Page({
       }
 
       this._displaySize = { width: displayWidth, height: displayHeight }
+      console.log('==================================================')
+      console.log('【调试日志】容器宽高:', container.width, container.height)
+      console.log('【调试日志】图片显示尺寸 display:', displayWidth, displayHeight)
+      console.log('【调试日志】原图真实尺寸 img:', imgWidth, imgHeight)
+      console.log('==================================================')
 
       this.setData({
         gridOverlayStyle: `left:${offsetX}px;top:${offsetY}px;width:${displayWidth}px;height:${displayHeight}px;`
@@ -131,19 +127,10 @@ Page({
     for (let i = 0; i < cols * rows; i++) {
       const col = i % cols
       const row = Math.floor(i / cols)
-      cells.push({
-        index: i,
-        col,
-        row,
-        isFirstRow: row === 0,
-        isFirstCol: col === 0,
-        isLastCol: col === cols - 1,
-        isLastRow: row === rows - 1
-      })
+      cells.push({ index: i, col, row, isFirstRow: row === 0, isFirstCol: col === 0, isLastCol: col === cols - 1, isLastRow: row === rows - 1 })
     }
     return cells
   },
-
   computeDividers(fractions) {
     const dividers = []
     let sum = 0
@@ -153,51 +140,29 @@ Page({
     }
     return dividers
   },
-
   initLayout() {
     const { gridCols, gridRows } = this.data
     const colFractions = Array(gridCols).fill(1 / gridCols)
     const rowFractions = Array(gridRows).fill(1 / gridRows)
-    this.setData({
-      gridCells: this.buildCells(gridCols, gridRows),
-      colFractions,
-      rowFractions,
-      colDividers: this.computeDividers(colFractions),
-      rowDividers: this.computeDividers(rowFractions),
-      selectedCells: []
-    })
+    this.setData({ gridCells: this.buildCells(gridCols, gridRows), colFractions, rowFractions, colDividers: this.computeDividers(colFractions), rowDividers: this.computeDividers(rowFractions), selectedCells: [] })
     this.recomputeFixedGrid(true)
     this.applyFrameStyle()
   },
-
-  // 重置当前 grid 对应的布局参数（cols/rows 变化或切换 tab/规格时调用）
   resetLayout() {
     const { gridCols, gridRows } = this.data
     const colFractions = Array(gridCols).fill(1 / gridCols)
     const rowFractions = Array(gridRows).fill(1 / gridRows)
-    this.setData({
-      colFractions,
-      rowFractions,
-      colDividers: this.computeDividers(colFractions),
-      rowDividers: this.computeDividers(rowFractions)
-    })
+    this.setData({ colFractions, rowFractions, colDividers: this.computeDividers(colFractions), rowDividers: this.computeDividers(rowFractions) })
     this.recomputeFixedGrid(true)
     this.applyFrameStyle()
   },
-
-  // 计算固定模式下的网格尺寸（保证每格为正方形）
-  // recenter=true 时把 grid 居中，否则保留当前 offset 但 clamp 到边界内
   recomputeFixedGrid(recenter) {
-    if (!this._displaySize) {
-      this.setData({ fixedGridW: 0, fixedGridH: 0, fixedOffsetX: 0, fixedOffsetY: 0 })
-      return
-    }
+    if (!this._displaySize) return
     const { width, height } = this._displaySize
     const { gridCols, gridRows } = this.data
     const cellSize = Math.min(width / gridCols, height / gridRows)
     const fixedGridW = cellSize * gridCols
     const fixedGridH = cellSize * gridRows
-
     let offsetX, offsetY
     if (recenter) {
       offsetX = (width - fixedGridW) / 2
@@ -206,22 +171,10 @@ Page({
       offsetX = Math.max(0, Math.min(width - fixedGridW, this.data.fixedOffsetX))
       offsetY = Math.max(0, Math.min(height - fixedGridH, this.data.fixedOffsetY))
     }
-
-    this.setData({
-      fixedGridW,
-      fixedGridH,
-      fixedOffsetX: offsetX,
-      fixedOffsetY: offsetY
-    })
+    this.setData({ fixedGridW, fixedGridH, fixedOffsetX: offsetX, fixedOffsetY: offsetY })
   },
-
   applyFrameStyle() {
-    const {
-      modeType, gridCols, gridRows,
-      colFractions, rowFractions,
-      fixedOffsetX, fixedOffsetY, fixedGridW, fixedGridH
-    } = this.data
-
+    const { modeType, gridCols, gridRows, colFractions, rowFractions, fixedOffsetX, fixedOffsetY, fixedGridW, fixedGridH } = this.data
     let style
     if (modeType === 'free') {
       const colCss = colFractions.map(f => `${(f * 100).toFixed(4)}%`).join(' ')
@@ -232,242 +185,120 @@ Page({
     }
     this.setData({ frameStyle: style })
   },
-
   getCurrentList(activeTab) {
     const { gridList, verticalList, horizontalList } = this.data
     if (activeTab === 1) return verticalList
     if (activeTab === 2) return horizontalList
     return gridList
   },
-
   onTabChange(e) {
     const index = parseInt(e.currentTarget.dataset.index, 10)
     const currentList = this.getCurrentList(index)
     const grid = currentList[0]
-    this.setData({
-      activeTab: index,
-      activeGridIndex: 0,
-      gridCols: grid.cols,
-      gridRows: grid.rows,
-      gridCells: this.buildCells(grid.cols, grid.rows),
-      selectedCells: []
-    })
+    this.setData({ activeTab: index, activeGridIndex: 0, gridCols: grid.cols, gridRows: grid.rows, gridCells: this.buildCells(grid.cols, grid.rows), selectedCells: [] })
     this.resetLayout()
   },
-
   onModeChange(e) {
     const type = e.currentTarget.dataset.type
     if (type === this.data.modeType) return
     this.setData({ modeType: type })
-    if (type === 'fixed') {
-      this.recomputeFixedGrid(true)
-    }
+    if (type === 'fixed') this.recomputeFixedGrid(true)
     this.applyFrameStyle()
   },
-
   onGridSelect(e) {
     const index = parseInt(e.currentTarget.dataset.index, 10)
-    const currentList = this.getCurrentList(this.data.activeTab)
+    const currentList = this.getCurrentList(this.activeTab)
     const grid = currentList[index]
     if (!grid) return
-    this.setData({
-      activeGridIndex: index,
-      gridCols: grid.cols,
-      gridRows: grid.rows,
-      gridCells: this.buildCells(grid.cols, grid.rows),
-      selectedCells: []
-    })
+    this.setData({ activeGridIndex: index, gridCols: grid.cols, gridRows: grid.rows, gridCells: this.buildCells(grid.cols, grid.rows), selectedCells: [] })
     this.resetLayout()
   },
-
   onCellTap(e) {
     const index = Number(e.currentTarget.dataset.index)
     if (Number.isNaN(index)) return
     this.handleCellTap(index)
   },
-
   handleCellTap(index) {
     const { activeTab, gridCols, gridRows, selectedCells } = this.data
     const newSelectedCells = [...selectedCells]
-
     const toggleCells = (cells) => {
       const allSelected = cells.every(c => newSelectedCells.includes(c))
       if (allSelected) {
-        cells.forEach(c => {
-          const idx = newSelectedCells.indexOf(c)
-          if (idx > -1) newSelectedCells.splice(idx, 1)
-        })
+        cells.forEach(c => { const idx = newSelectedCells.indexOf(c); if (idx > -1) newSelectedCells.splice(idx, 1) })
       } else {
-        cells.forEach(c => {
-          if (!newSelectedCells.includes(c)) newSelectedCells.push(c)
-        })
+        cells.forEach(c => { if (!newSelectedCells.includes(c)) newSelectedCells.push(c) })
       }
     }
-
-    if (activeTab === 0) {
-      toggleCells([index])
-    } else if (activeTab === 1) {
-      const col = index % gridCols
-      const colCells = []
-      for (let row = 0; row < gridRows; row++) {
-        colCells.push(row * gridCols + col)
-      }
-      toggleCells(colCells)
-    } else if (activeTab === 2) {
-      const row = Math.floor(index / gridCols)
-      const rowCells = []
-      for (let col = 0; col < gridCols; col++) {
-        rowCells.push(row * gridCols + col)
-      }
-      toggleCells(rowCells)
-    }
-
+    if (activeTab === 0) toggleCells([index])
+    else if (activeTab === 1) { const col = index % gridCols; const colCells = []; for (let row = 0; row < gridRows; row++) colCells.push(row * gridCols + col); toggleCells(colCells) }
+    else if (activeTab === 2) { const row = Math.floor(index / gridCols); const rowCells = []; for (let col = 0; col < gridCols; col++) rowCells.push(row * gridCols + col); toggleCells(rowCells) }
     this.setData({ selectedCells: newSelectedCells })
   },
-
-  // ---------- 自由模式：拖动单条分割线 ----------
   onDividerTouchStart(e) {
     if (this.data.modeType !== 'free') return
     const type = e.currentTarget.dataset.type
     const index = Number(e.currentTarget.dataset.index)
     const isCol = type === 'col'
-    this._dragDivider = {
-      type,
-      index,
-      startClientX: e.touches[0].clientX,
-      startClientY: e.touches[0].clientY,
-      startFractions: [...(isCol ? this.data.colFractions : this.data.rowFractions)]
-    }
+    this._dragDivider = { type, index, startClientX: e.touches[0].clientX, startClientY: e.touches[0].clientY, startFractions: [...(isCol ? this.data.colFractions : this.data.rowFractions)] }
   },
-
   onDividerTouchMove(e) {
     if (!this._dragDivider) return
     const { type, index, startClientX, startClientY, startFractions } = this._dragDivider
     const isCol = type === 'col'
-    const totalSize = isCol
-      ? (this._displaySize && this._displaySize.width) || 0
-      : (this._displaySize && this._displaySize.height) || 0
+    const totalSize = isCol ? (this._displaySize && this._displaySize.width) || 0 : (this._displaySize && this._displaySize.height) || 0
     if (!totalSize) return
-
-    const delta = isCol
-      ? e.touches[0].clientX - startClientX
-      : e.touches[0].clientY - startClientY
+    const delta = isCol ? e.touches[0].clientX - startClientX : e.touches[0].clientY - startClientY
     const deltaFraction = delta / totalSize
-
     const f1 = startFractions[index] + deltaFraction
     const f2 = startFractions[index + 1] - deltaFraction
-
-    // 单格最小占比 5%，避免一格被压扁
     const minFraction = 0.05
     if (f1 < minFraction || f2 < minFraction) return
-
     const newFractions = [...startFractions]
     newFractions[index] = f1
     newFractions[index + 1] = f2
-
-    if (isCol) {
-      this.setData({
-        colFractions: newFractions,
-        colDividers: this.computeDividers(newFractions)
-      })
-    } else {
-      this.setData({
-        rowFractions: newFractions,
-        rowDividers: this.computeDividers(newFractions)
-      })
-    }
+    if (isCol) this.setData({ colFractions: newFractions, colDividers: this.computeDividers(newFractions) })
+    else this.setData({ rowFractions: newFractions, rowDividers: this.computeDividers(newFractions) })
     this.applyFrameStyle()
   },
-
-  onDividerTouchEnd() {
-    this._dragDivider = null
-  },
-
-  // ---------- 固定模式：整体拖动网格 ----------
+  onDividerTouchEnd() { this._dragDivider = null },
   onFrameTouchStart(e) {
     if (this.data.modeType !== 'fixed') return
-    this._dragFrame = {
-      startClientX: e.touches[0].clientX,
-      startClientY: e.touches[0].clientY,
-      startOffsetX: this.data.fixedOffsetX,
-      startOffsetY: this.data.fixedOffsetY,
-      moved: false
-    }
+    this._dragFrame = { startClientX: e.touches[0].clientX, startClientY: e.touches[0].clientY, startOffsetX: this.data.fixedOffsetX, startOffsetY: this.data.fixedOffsetY, moved: false }
   },
-
   onFrameTouchMove(e) {
     if (this.data.modeType !== 'fixed' || !this._dragFrame) return
     if (!this._displaySize) return
-
     const { width, height } = this._displaySize
     const { fixedGridW, fixedGridH } = this.data
     const dx = e.touches[0].clientX - this._dragFrame.startClientX
     const dy = e.touches[0].clientY - this._dragFrame.startClientY
-
-    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-      this._dragFrame.moved = true
-    }
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) this._dragFrame.moved = true
     if (!this._dragFrame.moved) return
-
     let newX = this._dragFrame.startOffsetX + dx
     let newY = this._dragFrame.startOffsetY + dy
     newX = Math.max(0, Math.min(width - fixedGridW, newX))
     newY = Math.max(0, Math.min(height - fixedGridH, newY))
-
-    this.setData({
-      fixedOffsetX: newX,
-      fixedOffsetY: newY
-    })
+    this.setData({ fixedOffsetX: newX, fixedOffsetY: newY })
     this.applyFrameStyle()
   },
-
-  onFrameTouchEnd() {
-    this._dragFrame = null
-  },
-
+  onFrameTouchEnd() { this._dragFrame = null },
   onChooseImage() {
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
-      success: (res) => {
-        const file = res.tempFiles && res.tempFiles[0]
-        if (!file) return
-        this.setImageFromPath(file.tempFilePath)
-      },
-      fail: (err) => {
-        if (err && err.errMsg && err.errMsg.indexOf('cancel') === -1) {
-          wx.showToast({ title: '选择图片失败', icon: 'none' })
-        }
-      }
-    })
+    wx.chooseMedia({ count: 1, mediaType: ['image'], sizeType: ['original'], sourceType: ['album'], success: (res) => { const file = res.tempFiles[0]; if (!file) return; this.setImageFromPath(file.tempFilePath) } })
   },
+  onBack() { wx.navigateBack() },
 
-  onBack() {
-    wx.navigateBack()
-  },
-
-  // ========== 点击 ✓ 触发保存 ==========
   async onConfirm() {
-    if (!this.data.selectedImage) {
-      wx.showToast({ title: '请先选择图片', icon: 'none' })
-      return
-    }
-    if (!this.data.imgWidth || !this.data.imgHeight) {
-      wx.showToast({ title: '图片信息加载中', icon: 'none' })
-      return
-    }
-    if (this._saving) return
-    this._saving = true
+    console.log('==================================================')
+    console.log('【点击保存】')
+    if (!this.data.selectedImage || !this.data.imgWidth) { wx.showToast({ icon: 'none', title: '图片未加载' }); return }
+    const cellRects = this.computeCellRects()
+    console.log('【最终裁剪区域 原图坐标】', cellRects[0])
+    console.log('==================================================')
 
     try {
       await this.ensureAlbumAuth()
-
-      const cellRects = this.computeCellRects()
       const previewList = []
       const total = cellRects.length + 1
-
       for (let i = 0; i < cellRects.length; i++) {
         const r = cellRects[i]
         wx.showLoading({ title: `正在保存 ${i + 1}/${total}`, mask: true })
@@ -475,15 +306,12 @@ Page({
         await this.saveToAlbum(piecePath)
         previewList.push(piecePath)
       }
-
       wx.showLoading({ title: `正在保存 ${total}/${total}`, mask: true })
       const completePath = await this.renderCompleteImage()
       await this.saveToAlbum(completePath)
       previewList.push(completePath)
-
       wx.hideLoading()
       wx.showToast({ title: '保存成功', icon: 'success', duration: 1000 })
-
       setTimeout(() => {
         wx.redirectTo({
           url: `/pages/result/result?images=${encodeURIComponent(JSON.stringify(previewList))}`
@@ -491,108 +319,114 @@ Page({
       }, 1000)
     } catch (err) {
       wx.hideLoading()
-      const msg = (err && err.errMsg) || (err && err.message) || '保存失败'
-      if (msg.indexOf('cancel') === -1 && msg.indexOf('取消') === -1) {
-        wx.showToast({ title: msg, icon: 'none' })
-      }
-    } finally {
-      this._saving = false
     }
   },
 
-  // 计算每个格子在「原图坐标系」中的矩形
   computeCellRects() {
-    const {
-      modeType, gridCols, gridRows,
-      colFractions, rowFractions,
-      imgWidth, imgHeight,
-      fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY
-    } = this.data
+    const { modeType, gridCols, gridRows, imgWidth, imgHeight, fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY } = this.data
     const rects = []
-
     if (modeType === 'free') {
       const colXs = []
       let cumX = 0
-      for (let i = 0; i < gridCols; i++) {
-        colXs.push(cumX * imgWidth)
-        cumX += colFractions[i]
-      }
+      for (let i = 0; i < gridCols; i++) { colXs.push(cumX * imgWidth); cumX += this.data.colFractions[i] }
       colXs.push(imgWidth)
-
       const rowYs = []
       let cumY = 0
-      for (let i = 0; i < gridRows; i++) {
-        rowYs.push(cumY * imgHeight)
-        cumY += rowFractions[i]
-      }
+      for (let i = 0; i < gridRows; i++) { rowYs.push(cumY * imgHeight); cumY += this.data.rowFractions[i] }
       rowYs.push(imgHeight)
-
       for (let row = 0; row < gridRows; row++) {
         for (let col = 0; col < gridCols; col++) {
-          rects.push({
-            x: colXs[col],
-            y: rowYs[row],
-            w: colXs[col + 1] - colXs[col],
-            h: rowYs[row + 1] - rowYs[row]
-          })
+          rects.push({ x: colXs[col], y: rowYs[row], w: colXs[col + 1] - colXs[col], h: rowYs[row + 1] - rowYs[row] })
         }
       }
     } else {
-      // fixed 模式：网格仅占图片的正方形子区域
       const display = this._displaySize
-      if (!display || !display.width || !display.height) return rects
-      const scale = imgWidth / display.width
-      const baseX = fixedOffsetX * scale
-      const baseY = fixedOffsetY * scale
-      const totalW = fixedGridW * scale
-      const totalH = fixedGridH * scale
-      const cellW = totalW / gridCols
-      const cellH = totalH / gridRows
+      const scaleW = imgWidth / display.width
+      const scaleH = imgHeight / display.height
 
+      console.log('==================================================')
+      console.log('【网格视图坐标】', fixedOffsetX, fixedOffsetY, fixedGridW, fixedGridH)
+      console.log('【缩放比例】', scaleW, scaleH)
+
+      const x = fixedOffsetX * scaleW
+      const y = fixedOffsetY * scaleH
+      const w = fixedGridW * scaleW
+      const h = fixedGridH * scaleH
+
+      console.log('【映射到原图坐标】', x, y, w, h)
+      console.log('==================================================')
+
+      const cellW = w / gridCols
+      const cellH = h / gridRows
       for (let row = 0; row < gridRows; row++) {
         for (let col = 0; col < gridCols; col++) {
-          rects.push({
-            x: baseX + col * cellW,
-            y: baseY + row * cellH,
-            w: cellW,
-            h: cellH
-          })
+          rects.push({ x: x + col * cellW, y: y + row * cellH, w: cellW, h: cellH })
         }
       }
     }
-
     return rects
   },
 
-  // 生成完整图（保留分割线，固定模式保留正方形外框）
+  // 绘制完整图：只截取框选区域 + 保留原生黑白虚线分割线，无额外红边框
   renderCompleteImage() {
     return new Promise((resolve, reject) => {
-      const {
-        modeType, gridCols, gridRows,
-        colFractions, rowFractions,
-        imgWidth, imgHeight,
-        fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY
-      } = this.data
-
+      const { modeType, gridCols, gridRows, imgWidth, imgHeight, fixedGridW, fixedGridH, fixedOffsetX, fixedOffsetY, colFractions, rowFractions } = this.data
       const query = wx.createSelectorQuery().in(this)
-      query.select('#freeCutCanvas').fields({ node: true, size: true }).exec((res) => {
-        if (!res || !res[0] || !res[0].node) {
-          reject(new Error('canvas 节点获取失败'))
-          return
-        }
+      query.select('#freeCutCanvas').fields({ node: true }).exec((res) => {
+        if (!res || !res[0]) return reject()
         const canvas = res[0].node
         const ctx = canvas.getContext('2d')
-        canvas.width = imgWidth
-        canvas.height = imgHeight
 
-        const img = canvas.createImage()
-        img.onload = () => {
-          ctx.clearRect(0, 0, imgWidth, imgHeight)
-          ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
+        if (modeType === 'fixed') {
+          const display = this._displaySize
+          const scaleW = imgWidth / display.width
+          const scaleH = imgHeight / display.height
+          const cutX = fixedOffsetX * scaleW
+          const cutY = fixedOffsetY * scaleH
+          const cutW = fixedGridW * scaleW
+          const cutH = fixedGridH * scaleH
 
-          const lineWidth = Math.max(2, Math.round(Math.min(imgWidth, imgHeight) * 0.005))
+          // 画布设为框选区域大小
+          canvas.width = cutW
+          canvas.height = cutH
 
-          if (modeType === 'free') {
+          const img = canvas.createImage()
+          img.onload = () => {
+            // 截取框内图片
+            ctx.drawImage(img, cutX, cutY, cutW, cutH, 0, 0, cutW, cutH)
+            // 绘制和界面一致的黑白交替虚线分割线
+            const cellW = cutW / gridCols
+            const cellH = cutH / gridRows
+            const lineW = Math.max(2, Math.round(Math.min(cutW, cutH) * 0.005))
+
+            // 竖线
+            for (let i = 1; i < gridCols; i++) {
+              let lx = i * cellW
+              this.drawAlternatingLine(ctx, lx, 0, lx, cutH, lineW)
+            }
+            // 横线
+            for (let i = 1; i < gridRows; i++) {
+              let ly = i * cellH
+              this.drawAlternatingLine(ctx, 0, ly, cutW, ly, lineW)
+            }
+            // 外框虚线
+            this.drawAlternatingLine(ctx, 0, 0, cutW, 0, lineW)
+            this.drawAlternatingLine(ctx, 0, cutH, cutW, cutH, lineW)
+            this.drawAlternatingLine(ctx, 0, 0, 0, cutH, lineW)
+            this.drawAlternatingLine(ctx, cutW, 0, cutW, cutH, lineW)
+
+            wx.canvasToTempFilePath({ canvas, success: r => resolve(r.tempFilePath) })
+          }
+          img.src = this.data.selectedImage
+        } else {
+          // 自由模式原样
+          canvas.width = imgWidth
+          canvas.height = imgHeight
+          const img = canvas.createImage()
+          img.onload = () => {
+            ctx.clearRect(0, 0, imgWidth, imgHeight)
+            ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
+            const lineWidth = Math.max(2, Math.round(Math.min(imgWidth, imgHeight) * 0.005))
             let cumX = 0
             for (let i = 0; i < gridCols - 1; i++) {
               cumX += colFractions[i]
@@ -605,54 +439,20 @@ Page({
               const y = cumY * imgHeight
               this.drawAlternatingLine(ctx, 0, y, imgWidth, y, lineWidth)
             }
-          } else {
-            const display = this._displaySize
-            if (display && display.width) {
-              const scale = imgWidth / display.width
-              const baseX = fixedOffsetX * scale
-              const baseY = fixedOffsetY * scale
-              const totalW = fixedGridW * scale
-              const totalH = fixedGridH * scale
-              const cellW = totalW / gridCols
-              const cellH = totalH / gridRows
-
-              this.drawAlternatingLine(ctx, baseX, baseY, baseX + totalW, baseY, lineWidth)
-              this.drawAlternatingLine(ctx, baseX, baseY + totalH, baseX + totalW, baseY + totalH, lineWidth)
-              this.drawAlternatingLine(ctx, baseX, baseY, baseX, baseY + totalH, lineWidth)
-              this.drawAlternatingLine(ctx, baseX + totalW, baseY, baseX + totalW, baseY + totalH, lineWidth)
-
-              for (let i = 1; i < gridCols; i++) {
-                const x = baseX + i * cellW
-                this.drawAlternatingLine(ctx, x, baseY, x, baseY + totalH, lineWidth)
-              }
-              for (let i = 1; i < gridRows; i++) {
-                const y = baseY + i * cellH
-                this.drawAlternatingLine(ctx, baseX, y, baseX + totalW, y, lineWidth)
-              }
-            }
+            wx.canvasToTempFilePath({ canvas, success: r => resolve(r.tempFilePath) })
           }
-
-          wx.canvasToTempFilePath({
-            canvas,
-            fileType: 'jpg',
-            quality: 1,
-            success: (r) => resolve(r.tempFilePath),
-            fail: reject
-          })
+          img.src = this.data.selectedImage
         }
-        img.onerror = () => reject(new Error('图片解码失败'))
-        img.src = this.data.selectedImage
       })
     })
   },
 
-  // 绘制黑白相间虚线（与界面网格视觉一致）
+  // 黑白相间虚线绘制方法（和界面预览一致）
   drawAlternatingLine(ctx, x1, y1, x2, y2, lineWidth) {
     const dash = Math.max(4, lineWidth * 4)
     ctx.save()
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'butt'
-
     ctx.setLineDash([dash, dash])
     ctx.lineDashOffset = 0
     ctx.strokeStyle = '#000000'
@@ -668,98 +468,44 @@ Page({
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)
     ctx.stroke()
-
     ctx.restore()
   },
 
   cropImageByCanvas(src, sx, sy, sw, sh) {
     return new Promise((resolve, reject) => {
       const query = wx.createSelectorQuery().in(this)
-      query.select('#freeCutCanvas').fields({ node: true, size: true }).exec((res) => {
-        if (!res || !res[0] || !res[0].node) {
-          reject(new Error('canvas 节点获取失败'))
-          return
-        }
+      query.select('#freeCutCanvas').fields({ node: true }).exec((res) => {
+        if (!res || !res[0]) return reject()
         const canvas = res[0].node
         const ctx = canvas.getContext('2d')
-
-        const outputW = Math.max(1, Math.round(sw))
-        const outputH = Math.max(1, Math.round(sh))
-        canvas.width = outputW
-        canvas.height = outputH
-
+        const w = Math.max(1, Math.round(sw))
+        const h = Math.max(1, Math.round(sh))
+        canvas.width = w
+        canvas.height = h
         const img = canvas.createImage()
         img.onload = () => {
-          ctx.clearRect(0, 0, outputW, outputH)
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputW, outputH)
-          wx.canvasToTempFilePath({
-            canvas,
-            x: 0,
-            y: 0,
-            width: outputW,
-            height: outputH,
-            destWidth: outputW,
-            destHeight: outputH,
-            fileType: 'jpg',
-            quality: 1,
-            success: (r) => resolve(r.tempFilePath),
-            fail: (e) => reject(e)
-          })
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h)
+          wx.canvasToTempFilePath({ canvas, success: r => resolve(r.tempFilePath) })
         }
-        img.onerror = () => reject(new Error('图片解码失败'))
         img.src = src
       })
     })
   },
 
   ensureAlbumAuth() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       wx.getSetting({
-        success: (res) => {
-          const auth = res.authSetting['scope.writePhotosAlbum']
-          if (auth === true) {
-            resolve()
-          } else if (auth === false) {
-            wx.showModal({
-              title: '保存提示',
-              content: '需要授权保存图片到相册，是否前往设置？',
-              success: (modalRes) => {
-                if (!modalRes.confirm) {
-                  reject(new Error('用户取消授权'))
-                  return
-                }
-                wx.openSetting({
-                  success: (setRes) => {
-                    if (setRes.authSetting['scope.writePhotosAlbum']) {
-                      resolve()
-                    } else {
-                      reject(new Error('未授权保存到相册'))
-                    }
-                  },
-                  fail: () => reject(new Error('打开设置失败'))
-                })
-              }
-            })
-          } else {
-            wx.authorize({
-              scope: 'scope.writePhotosAlbum',
-              success: resolve,
-              fail: () => reject(new Error('未授权保存到相册'))
-            })
-          }
-        },
-        fail: () => reject(new Error('获取授权信息失败'))
+        success(res) {
+          if (res.authSetting['scope.writePhotosAlbum']) resolve()
+          else wx.authorize({ scope: 'scope.writePhotosAlbum', success: resolve })
+        }
       })
     })
   },
 
   saveToAlbum(filePath) {
-    return new Promise((resolve, reject) => {
-      wx.saveImageToPhotosAlbum({
-        filePath,
-        success: resolve,
-        fail: reject
-      })
+    return new Promise(resolve => {
+      wx.saveImageToPhotosAlbum({ filePath, success: resolve })
     })
   }
 })
