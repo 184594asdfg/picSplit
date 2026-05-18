@@ -413,9 +413,15 @@ page {
   letter-spacing: 0;
 }
 
-/* 拼图（单图）大图：保留更显眼的角标，但默认隐藏 */
+/* 拼图（单图）大图：与预览保持一致，不带圆角 */
 .preview-grid.cols-1 .preview-item {
-  border-radius: 24rpx;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+.preview-grid.cols-1 .preview-image {
+  border-radius: 0;
 }
 
 .footer-tip {

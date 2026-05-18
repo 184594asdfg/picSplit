@@ -399,16 +399,26 @@ Page({
         if (!item.src) return Promise.resolve(null)
         return new Promise(resolve => {
           const img = canvas.createImage()
+          img.onload = () => resolve({ img, cell: this.data.cells[idx], item })
+          img.onerror = () => resolve(null)
           img.src = item.src
-          img.onload = resolve.bind(null, { img, cell: this.data.cells[idx], item })
         })
       })).then(list => {
         list.forEach(d => {
           if (!d) return
           const { img, cell, item } = d
-          const sx = cell.x + pad + item.offsetX
-          const sy = cell.y + pad + item.offsetY
+          const clipX = cell.x + pad
+          const clipY = cell.y + pad
+          const clipW = Math.max(0, cell.w - 2 * pad)
+          const clipH = Math.max(0, cell.h - 2 * pad)
+          const sx = clipX + item.offsetX
+          const sy = clipY + item.offsetY
+          ctx.save()
+          ctx.beginPath()
+          ctx.rect(clipX, clipY, clipW, clipH)
+          ctx.clip()
           ctx.drawImage(img, sx, sy, item.dispW, item.dispH)
+          ctx.restore()
         })
         wx.canvasToTempFilePath({
           canvas,
