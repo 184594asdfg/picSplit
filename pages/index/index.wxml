@@ -4,7 +4,7 @@
 
   <view class="hero">
     <view class="hero-badge">PIC SPLIT</view>
-    <view class="hero-title">图片切割助手</view>
+    <view class="hero-title">图片切图助手</view>
     <view class="hero-subtitle">一键切图 · 朋友圈九宫格 · 自由分割</view>
   </view>
 
