@@ -212,7 +212,7 @@ Page({
   },
   onGridSelect(e) {
     const index = parseInt(e.currentTarget.dataset.index, 10)
-    const currentList = this.getCurrentList(this.activeTab)
+    const currentList = this.getCurrentList(this.data.activeTab)
     const grid = currentList[index]
     if (!grid) return
     this.setData({ activeGridIndex: index, gridCols: grid.cols, gridRows: grid.rows, gridCells: this.buildCells(grid.cols, grid.rows), selectedCells: [] })
