@@ -21,6 +21,13 @@ Page({
       { cols: 3, rows: 4, name: '3×4' },
       { cols: 4, rows: 3, name: '4×3' }
     ],
+    // 自定义网格图标：修改 name 和 icon 即可
+    customGridIcon: '/images/icons/custom-grid.png',
+    customGridName: '自定义',
+    showCustomModal: false,
+    customGridOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    customPickerValue: [1, 1],
+    isCustomGridActive: false,
     verticalList: [
       { cols: 2, rows: 1, name: '2张' },
       { cols: 3, rows: 1, name: '3张' },
@@ -166,17 +173,34 @@ Page({
     const { width, height } = this._displaySize
     const { gridCols, gridRows } = this.data
     const cellSize = Math.min(width / gridCols, height / gridRows)
-    const fixedGridW = cellSize * gridCols
-    const fixedGridH = cellSize * gridRows
-    let offsetX, offsetY
+    let fixedGridW = cellSize * gridCols
+    let fixedGridH = cellSize * gridRows
+    let offsetX
+    let offsetY
     if (recenter) {
       offsetX = (width - fixedGridW) / 2
       offsetY = (height - fixedGridH) / 2
     } else {
-      offsetX = Math.max(0, Math.min(width - fixedGridW, this.data.fixedOffsetX))
-      offsetY = Math.max(0, Math.min(height - fixedGridH, this.data.fixedOffsetY))
+      offsetX = this.data.fixedOffsetX
+      offsetY = this.data.fixedOffsetY
     }
-    this.setData({ fixedGridW, fixedGridH, fixedOffsetX: offsetX, fixedOffsetY: offsetY })
+    const normalized = this.normalizeFixedRect(fixedGridW, fixedGridH, offsetX, offsetY, width, height)
+    this.setData({
+      fixedGridW: normalized.gridW,
+      fixedGridH: normalized.gridH,
+      fixedOffsetX: normalized.offsetX,
+      fixedOffsetY: normalized.offsetY
+    })
+  },
+
+  normalizeFixedRect(w, h, x, y, maxW, maxH) {
+    const gridW = Math.min(maxW, Math.round(w))
+    const gridH = Math.min(maxH, Math.round(h))
+    let offsetX = Math.round(x)
+    let offsetY = Math.round(y)
+    offsetX = Math.max(0, Math.min(maxW - gridW, offsetX))
+    offsetY = Math.max(0, Math.min(maxH - gridH, offsetY))
+    return { gridW, gridH, offsetX, offsetY }
   },
   applyFrameStyle() {
     const { modeType, gridCols, gridRows, colFractions, rowFractions, fixedOffsetX, fixedOffsetY, fixedGridW, fixedGridH } = this.data
@@ -200,7 +224,15 @@ Page({
     const index = parseInt(e.currentTarget.dataset.index, 10)
     const currentList = this.getCurrentList(index)
     const grid = currentList[0]
-    this.setData({ activeTab: index, activeGridIndex: 0, gridCols: grid.cols, gridRows: grid.rows, gridCells: this.buildCells(grid.cols, grid.rows), selectedCells: [] })
+    this.setData({
+      activeTab: index,
+      activeGridIndex: 0,
+      gridCols: grid.cols,
+      gridRows: grid.rows,
+      gridCells: this.buildCells(grid.cols, grid.rows),
+      selectedCells: [],
+      isCustomGridActive: false
+    })
     this.resetLayout()
   },
   onModeChange(e) {
@@ -215,7 +247,49 @@ Page({
     const currentList = this.getCurrentList(this.data.activeTab)
     const grid = currentList[index]
     if (!grid) return
-    this.setData({ activeGridIndex: index, gridCols: grid.cols, gridRows: grid.rows, gridCells: this.buildCells(grid.cols, grid.rows), selectedCells: [] })
+    this.setData({
+      activeGridIndex: index,
+      gridCols: grid.cols,
+      gridRows: grid.rows,
+      gridCells: this.buildCells(grid.cols, grid.rows),
+      selectedCells: [],
+      isCustomGridActive: false
+    })
+    this.resetLayout()
+  },
+
+  onCustomGridTap() {
+    const { isCustomGridActive, gridCols, gridRows } = this.data
+    this.setData({
+      showCustomModal: true,
+      customPickerValue: [
+        Math.max(0, Math.min(9, (isCustomGridActive ? gridCols : 2) - 1)),
+        Math.max(0, Math.min(9, (isCustomGridActive ? gridRows : 2) - 1))
+      ]
+    })
+  },
+
+  onCustomPickerChange(e) {
+    this.setData({ customPickerValue: e.detail.value })
+  },
+
+  onCustomModalCancel() {
+    this.setData({ showCustomModal: false })
+  },
+
+  onCustomModalConfirm() {
+    const [colIdx, rowIdx] = this.data.customPickerValue
+    const cols = colIdx + 1
+    const rows = rowIdx + 1
+    this.setData({
+      showCustomModal: false,
+      isCustomGridActive: true,
+      activeGridIndex: -1,
+      gridCols: cols,
+      gridRows: rows,
+      gridCells: this.buildCells(cols, rows),
+      selectedCells: []
+    })
     this.resetLayout()
   },
   onCellTap(e) {
@@ -297,9 +371,8 @@ Page({
     if (!this._dragFrame.moved) return
     let newX = this._dragFrame.startOffsetX + dx
     let newY = this._dragFrame.startOffsetY + dy
-    newX = Math.max(0, Math.min(width - fixedGridW, newX))
-    newY = Math.max(0, Math.min(height - fixedGridH, newY))
-    this.setData({ fixedOffsetX: newX, fixedOffsetY: newY })
+    const normalized = this.normalizeFixedRect(fixedGridW, fixedGridH, newX, newY, width, height)
+    this.setData({ fixedOffsetX: normalized.offsetX, fixedOffsetY: normalized.offsetY })
     this.applyFrameStyle()
   },
   onFrameTouchEnd(e) {
@@ -351,16 +424,21 @@ Page({
     const centerY = startOffsetY + startGridH / 2
     let newX = centerX - newGridW / 2
     let newY = centerY - newGridH / 2
-    newX = Math.max(0, Math.min(width - newGridW, newX))
-    newY = Math.max(0, Math.min(height - newGridH, newY))
-
-    this.setData({ fixedGridW: newGridW, fixedGridH: newGridH, fixedOffsetX: newX, fixedOffsetY: newY })
+    const normalized = this.normalizeFixedRect(newGridW, newGridH, newX, newY, width, height)
+    this.setData({
+      fixedGridW: normalized.gridW,
+      fixedGridH: normalized.gridH,
+      fixedOffsetX: normalized.offsetX,
+      fixedOffsetY: normalized.offsetY
+    })
     this.applyFrameStyle()
   },
   onChooseImage() {
     wx.chooseMedia({ count: 1, mediaType: ['image'], sizeType: ['original'], sourceType: ['album'], success: (res) => { const file = res.tempFiles[0]; if (!file) return; this.setImageFromPath(file.tempFilePath) } })
   },
   onBack() { wx.navigateBack() },
+
+  preventMove() {},
 
   async onConfirm() {
     console.log('==================================================')
@@ -473,11 +551,11 @@ Page({
 
             for (let i = 1; i < gridCols; i++) {
               const lx = i * cellW
-              this.drawAlternatingLine(ctx, lx, 0, lx, cutH, dividerW)
+              this.drawBlueLine(ctx, lx, 0, lx, cutH, dividerW)
             }
             for (let i = 1; i < gridRows; i++) {
               const ly = i * cellH
-              this.drawAlternatingLine(ctx, 0, ly, cutW, ly, dividerW)
+              this.drawBlueLine(ctx, 0, ly, cutW, ly, dividerW)
             }
 
             this.drawFrameViewfinder(ctx, cutW, cutH)
@@ -513,6 +591,19 @@ Page({
     })
   },
 
+  drawBlueLine(ctx, x1, y1, x2, y2, lineWidth) {
+    ctx.save()
+    ctx.setLineDash([])
+    ctx.lineCap = 'butt'
+    ctx.strokeStyle = 'rgba(0, 122, 255, 0.7)'
+    ctx.lineWidth = lineWidth
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x2, y2)
+    ctx.stroke()
+    ctx.restore()
+  },
+
   // 内部分割线：精致的黑白短划虚线（与 UI grid-cell::before/::after 一致）
   // 黑 0.55 透明 + 白 0.9 透明，色块 ≈ lineWidth*3，看起来更紧凑
   drawAlternatingLine(ctx, x1, y1, x2, y2, lineWidth) {
@@ -538,40 +629,20 @@ Page({
     ctx.restore()
   },
 
-  // 取景框风格的外框：
-  //   - 连续白色细线（让整个范围闭合可见）
-  //   - 紧贴白线内侧的半透明黑细线（提升白底图上的对比度，代替 UI 的外侧 box-shadow）
-  //   - 四角粗白 L 形角标（强调可拖动边界）
+  // 固定模式外框：蓝色线条，与内部分割线样式一致
   drawFrameViewfinder(ctx, w, h) {
     const base = Math.min(w, h)
-    const outlineW = Math.max(2, Math.round(base * 0.004))
-    const shadowW = Math.max(1, Math.round(base * 0.002))
-    const cornerLen = Math.max(20, Math.round(base * 0.045))
-    const cornerW = Math.max(4, Math.round(base * 0.008))
+    const outlineW = Math.max(4, Math.round(base * 0.004))
+    const blue = 'rgba(0, 122, 255, 0.7)'
 
     ctx.save()
     ctx.setLineDash([])
     ctx.lineCap = 'butt'
 
-    const whiteInset = outlineW / 2
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+    const inset = outlineW / 2
+    ctx.strokeStyle = blue
     ctx.lineWidth = outlineW
-    ctx.strokeRect(whiteInset, whiteInset, w - outlineW, h - outlineW)
-
-    const shadowInset = outlineW + shadowW / 2
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)'
-    ctx.lineWidth = shadowW
-    ctx.strokeRect(shadowInset, shadowInset, w - shadowInset * 2, h - shadowInset * 2)
-
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, cornerLen, cornerW)
-    ctx.fillRect(0, 0, cornerW, cornerLen)
-    ctx.fillRect(w - cornerLen, 0, cornerLen, cornerW)
-    ctx.fillRect(w - cornerW, 0, cornerW, cornerLen)
-    ctx.fillRect(0, h - cornerW, cornerLen, cornerW)
-    ctx.fillRect(0, h - cornerLen, cornerW, cornerLen)
-    ctx.fillRect(w - cornerLen, h - cornerW, cornerLen, cornerW)
-    ctx.fillRect(w - cornerW, h - cornerLen, cornerW, cornerLen)
+    ctx.strokeRect(inset, inset, w - outlineW, h - outlineW)
 
     ctx.restore()
   },

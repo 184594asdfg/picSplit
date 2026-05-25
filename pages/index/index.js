@@ -6,12 +6,12 @@ Page({
       {
         id: 1,
         name: '九宫格切图',
-        desc: '将图片切成九宫格'
+        desc: '制作九宫格、爱心、星星等形状图片'
       },
       {
         id: 2,
         name: '自由切图',
-        desc: '自定义分割图片'
+        desc: '表情包分割、UI图分割'
       },
       {
         id: 3,
@@ -72,14 +72,14 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '图片切割助手 - 一键九宫格 / 自由分割',
+      title: '九宫格切图X - 一键九宫格 / 自由分割',
       path: '/pages/index/index'
     }
   },
 
   onShareTimeline() {
     return {
-      title: '图片切割助手 - 一键九宫格 / 自由分割'
+      title: '九宫格切图X - 一键九宫格 / 自由分割'
     }
   }
 })

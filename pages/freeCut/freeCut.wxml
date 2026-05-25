@@ -98,7 +98,7 @@
 
     <view class="grid-options">
       <view
-        class="grid-item {{activeGridIndex === index ? 'active' : ''}}"
+        class="grid-item {{!isCustomGridActive && activeGridIndex === index ? 'active' : ''}}"
         wx:for="{{activeTab === 0 ? gridList : activeTab === 1 ? verticalList : horizontalList}}"
         wx:key="index"
         data-index="{{index}}"
@@ -109,10 +109,47 @@
         </view>
         <view class="grid-text">{{item.name}}</view>
       </view>
+
+      <view
+        class="grid-item grid-item-custom {{isCustomGridActive ? 'active' : ''}}"
+        bindtap="onCustomGridTap"
+      >
+        <view class="icon-box icon-custom">
+          <image class="custom-grid-icon" src="{{customGridIcon}}" mode="aspectFit" />
+        </view>
+        <view class="grid-text">{{customGridName}}</view>
+      </view>
     </view>
 
 
   </view>
 
   <canvas type="2d" id="freeCutCanvas" class="cut-canvas"></canvas>
+
+  <view class="custom-modal-mask" wx:if="{{showCustomModal}}" catchtouchmove="preventMove">
+    <view class="custom-modal">
+      <view class="custom-modal-title">自定义网格</view>
+      <view class="custom-picker-header">
+        <text class="custom-picker-title">列数</text>
+        <text class="custom-picker-title">行数</text>
+      </view>
+      <picker-view
+        class="custom-picker-view"
+        indicator-class="custom-picker-indicator"
+        value="{{customPickerValue}}"
+        bindchange="onCustomPickerChange"
+      >
+        <picker-view-column>
+          <view wx:for="{{customGridOptions}}" wx:key="*this" class="custom-picker-item">{{item}}</view>
+        </picker-view-column>
+        <picker-view-column>
+          <view wx:for="{{customGridOptions}}" wx:key="*this" class="custom-picker-item">{{item}}</view>
+        </picker-view-column>
+      </picker-view>
+      <view class="custom-modal-actions">
+        <view class="custom-modal-btn cancel" bindtap="onCustomModalCancel">取消</view>
+        <view class="custom-modal-btn confirm" bindtap="onCustomModalConfirm">确定</view>
+      </view>
+    </view>
+  </view>
 </view>
